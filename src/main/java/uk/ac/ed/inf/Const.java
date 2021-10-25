@@ -27,9 +27,21 @@ public class Const {
     // Directory of menus.json in the server
     public static final String URL_MENUS = "/menus/menus.json";
 
+    // Directory of no-fly-zones.geojson in the server
+    public static final String URL_NO_FLY_ZONES = "/buildings/no-fly-zones.geojson";
+
+    // Directory of landmarks.geojson in the server
+    public static final String URL_LANDMARKS = "/buildings/landmarks.geojson";
+
+    // Directory of landmarks.geojson in the server
+    public static final String DATABASE = "/derbyDB";
+
     // Delivery Charge of 50p
     public static final int DELIVERY_CHARGE = 50;
 
     // Angle value when hovering
     public static final int HOVERING = -999;
+
+    // IP of localhost
+    public static final String IP = "localhost";
 }

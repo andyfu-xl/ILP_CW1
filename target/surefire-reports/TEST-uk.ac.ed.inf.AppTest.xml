@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="uk.ac.ed.inf.AppTest" time="0.338" tests="21" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="14"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="GBK"/>
+    <property name="java.class.path" value="C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp\target\test-classes;C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp\target\classes;C:\Users\Andy Fu\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\Andy Fu\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\Andy Fu\.m2\repository\com\google\code\gson\gson\2.8.8\gson-2.8.8.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="Europe/London"/>
+    <property name="os.name" value="Windows 10"/>
+    <property name="java.vm.specification.version" value="14"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="CN"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-14.0.2\bin"/>
+    <property name="sun.java.command" value="C:\Users\ANDYFU~1\AppData\Local\Temp\surefire15307699536346398515\surefirebooter15404973154711887407.jar C:\Users\Andy Fu\AppData\Local\Temp\surefire15307699536346398515 2021-10-13T18-33-45_218-jvmRun1 surefire11675520507549554298tmp surefire_016733943331584070466tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp\target\test-classes;C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp\target\classes;C:\Users\Andy Fu\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\Andy Fu\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\Andy Fu\.m2\repository\com\google\code\gson\gson\2.8.8\gson-2.8.8.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\Andy Fu"/>
+    <property name="user.language" value="zh"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2020-07-14"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-14.0.2"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\ANDYFU~1\AppData\Local\Temp\surefire15307699536346398515\surefirebooter15404973154711887407.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="14.0.2+12-46"/>
+    <property name="user.name" value="Andy Fu"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="GBK"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\Andy Fu\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\ANDYFU~1\AppData\Local\Temp\"/>
+    <property name="idea.version" value="2021.1"/>
+    <property name="java.version" value="14.0.2"/>
+    <property name="user.dir" value="C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-14.0.2\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Program Files\Haskell\bin;C:\Program Files\Java\jdk-14.0.2\bin;C:\Gradle\gradle-6.8.3-all\gradle-6.8.3\bin;C:\Program Files\Haskell Platform\8.6.5\lib\extralibs\bin;C:\Program Files\Haskell Platform\8.6.5\bin;C:\Program Files\Haskell Platform\8.6.5\mingw\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files (x86)\Bitvise SSH Client;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\MinGW\bin;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\Andy Fu\AppData\Local\Programs\Python\Python38-32\Scripts\;C:\Users\Andy Fu\AppData\Local\Programs\Python\Python38-32\;C:\Users\Andy Fu\AppData\Roaming\cabal\bin;C:\Users\Andy Fu\AppData\Roaming\local\bin;C:\Users\Andy Fu\AppData\Local\Microsoft\WindowsApps;D:\Microsoft VS Code\bin;C:\Users\Andy Fu\.dotnet\tools;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2021.1\bin;;C:\Users\Andy Fu\AppData\Local\GitHubDesktop\bin;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="14.0.2+12-46"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="58.0"/>
+  </properties>
+  <testcase name="testCloseToFalse" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle20" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle50" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle90" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testCloseToTrue" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testMenusFourA" classname="uk.ac.ed.inf.AppTest" time="0.279"/>
+  <testcase name="testMenusFourB" classname="uk.ac.ed.inf.AppTest" time="0.005"/>
+  <testcase name="testMenusThree" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle140" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle190" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle260" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle300" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle350" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle999" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testMenusOne" classname="uk.ac.ed.inf.AppTest" time="0.013"/>
+  <testcase name="testMenusTwo" classname="uk.ac.ed.inf.AppTest" time="0.007"/>
+  <testcase name="testAngle0" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testIsConfinedFalse" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testIsConfinedTrueA" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testIsConfinedTrueB" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testDistanceTo" classname="uk.ac.ed.inf.AppTest" time="0"/>
+</testsuite>
