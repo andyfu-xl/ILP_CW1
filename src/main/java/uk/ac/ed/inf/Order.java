@@ -7,11 +7,20 @@ public class Order {
     private String deliveryDate;
     private String customer;
     private String deliverTo;
-    private ArrayList<String> item;
+    private ArrayList<String> items;
+
+    public Order(String orderNo, String deliveryDate, String customer,
+                 String deliverTo, ArrayList<String> items) {
+        this.orderNo = orderNo;
+        this.deliveryDate = deliveryDate;
+        this.customer = customer;
+        this.deliverTo = deliverTo;
+        this.items = items;
+    }
 
     public String getOrderNo() { return orderNo; }
     public String getDeliveryDate() { return deliveryDate; }
     public String getCustomer() { return customer; }
     public String getDeliverTo() { return deliverTo; }
-    public ArrayList<String> getItem() { return item; }
+    public ArrayList<String> getItem() { return items; }
 }

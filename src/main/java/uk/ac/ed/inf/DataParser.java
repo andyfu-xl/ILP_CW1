@@ -63,25 +63,51 @@ public class DataParser {
         }
     }
 
-    public void readOrders() {
+    public ArrayList<String> getItemNames(ServerConnector sc, String orderNo) {
+        final String coursesQuery =
+                "select * from orderDetails where orderNo=(?)";
+        ArrayList<String> itemNames = new ArrayList<>();
+        try {
+            PreparedStatement psCourseQuery = sc.getConn().prepareStatement(coursesQuery);
+            psCourseQuery.setString(1, orderNo);
+            ResultSet rs = psCourseQuery.executeQuery();
+            while (rs.next()) {
+                itemNames.add(rs.getString("item"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: Failed to retrieve items of order from date base.");
+            e.printStackTrace();
+        }
+        return itemNames;
+    }
+
+    /**
+     * Read order details from the server, store orders as list of order objects.
+     */
+    public void readOrders(String date) {
         server.connectJDBC(Const.DATABASE);
         ServerConnector sc = new ServerConnector("localhost", "9876");
         sc.connectJDBC(Const.DATABASE);
         final String coursesQuery =
-                "select * from ORDERS where DELIVERYDATE=(?)";
-        ArrayList<String> locList = new ArrayList<>();
+                "select * from orders where deliveryDate=(?)";
+        ArrayList<Order> orderList = new ArrayList<>();
         try {
             PreparedStatement psCourseQuery = sc.getConn().prepareStatement(coursesQuery);
-            psCourseQuery.setString(1, "2022-1-1");
+            psCourseQuery.setString(1, date);
             ResultSet rs = psCourseQuery.executeQuery();
             while (rs.next()) {
-                String loc = rs.getString("DELIVERTO");
-                System.out.println(loc);
-                locList.add(loc);
+                String orderNo = rs.getString("orderNo");
+                String customer = rs.getString("customer");
+                String deliverTo = rs.getString("deliverTo");
+                ArrayList<String> itemNames = getItemNames(sc, orderNo);
+                Order order = new Order(orderNo, date, customer, deliverTo, itemNames);
+                orderList.add(order);
             }
         } catch (SQLException e) {
+            System.out.println("Error: Failed to retrieve orders from data base.");
             e.printStackTrace();
         }
+        this.orders = orderList;
     }
 
 }

@@ -41,7 +41,7 @@ public class DatabaseTest {
                 "select * from ORDERS where DELIVERYDATE=(?)";
         PreparedStatement psCourseQuery =
                 sc.getConn().prepareStatement(coursesQuery);
-        psCourseQuery.setString(1, "2022-1-1");
+        psCourseQuery.setString(1, "2022-1-2");
         ArrayList<String> locList = new ArrayList<>();
         ResultSet rs = psCourseQuery.executeQuery();
         while (rs.next()) {
