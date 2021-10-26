@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 
-public class ServerConnector {
+public class HttpConnection {
 
     /* Just have one HttpClient, use it multiple times. We have one
        client so it's declared as static, it won't update (final) */
@@ -20,15 +20,8 @@ public class ServerConnector {
     private String name;
     private String port;
     private String json;
-    private Statement statement;
-    private Connection conn;
-
-    // getters
-    public String getJson() {
-        return this.json;
-    }
-    public Statement getStatement() { return this.statement; }
-    public Connection getConn() {return this.conn; }
+//    private Statement statement;
+//    private Connection conn;
 
     /**
      * Constructor of ServerConnector Class.
@@ -36,9 +29,14 @@ public class ServerConnector {
      * @param name name of the machine.
      * @param port port number.
      */
-    public ServerConnector(String name, String port) {
+    public HttpConnection(String name, String port) {
         this.name = name;
         this.port = port;
+    }
+
+    // getters
+    public String getJson() {
+        return this.json;
     }
 
     /**
@@ -66,24 +64,6 @@ public class ServerConnector {
                     + " at port " + this.port + ".");
             e.printStackTrace();
             System.exit(1);
-        }
-    }
-
-    /**
-     * Connect with database in the server
-     * The protocol should be jdbc:derby
-     *
-     * @param database the name of database
-     */
-    public void connectJDBC(String database) {
-        String jdbcString = ("jdbc:derby://" + this.name + ":" + this.port + database);
-        try {
-            this.conn = DriverManager.getConnection(jdbcString);
-            this.statement = this.conn.createStatement();
-        } catch (SQLException e) {
-            System.out.println("Fatal error: Unable to connect to " + this.name
-                    + " at port " + this.port + ".");
-            e.printStackTrace();
         }
     }
 
