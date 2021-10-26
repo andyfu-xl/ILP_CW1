@@ -21,6 +21,7 @@ public class DataParser {
     private ArrayList<Polygon> buildings;
     private ArrayList<Point> landmarks;
     private ArrayList<Order> orders;
+    private LongLat deliverTo;
 
     public DataParser(String name, String port) {
         this.server = new ServerConnector(name, port);
@@ -29,12 +30,25 @@ public class DataParser {
     public ArrayList<Shop> getShops() {
         return this.shops;
     }
+    public ArrayList<Polygon> getBuildings() {
+        return this.buildings;
+    }
+    public ArrayList<Point> getLandmarks() {
+        return this.landmarks;
+    }
+    public ArrayList<Order> getOrders() {
+        return this.orders;
+    }
+    public LongLat getDeliverTo() {
+        return this.deliverTo;
+    }
+
 
     /**
      * Read menus file from the server, store menus as list of shops.
      */
     public void readMenus() {
-        server.connectHttp(Const.URL_MENUS);
+        server.connectHttp(Const.PATH_MENUS);
         Type listType = new TypeToken<ArrayList<Shop>>() {}.getType();
         this.shops = new Gson().fromJson(server.getJson(), listType);
     }
@@ -43,7 +57,7 @@ public class DataParser {
      * Read no-fly-zones file from the server, store no-fly-zone as list of polygons.
      */
     public void readNoFlyZones() {
-        server.connectHttp(Const.URL_NO_FLY_ZONES);
+        server.connectHttp(Const.PATH_NO_FLY_ZONES);
         FeatureCollection featureCollection = FeatureCollection.fromJson(server.getJson());
         this.buildings = new ArrayList<>();
         for (Feature feature : featureCollection.features()) {
@@ -55,12 +69,42 @@ public class DataParser {
      * Read landmarks file from the server, store landmarks as list of points.
      */
     public void readLandmarks() {
-        server.connectHttp(Const.URL_LANDMARKS);
+        server.connectHttp(Const.PATH_LANDMARKS);
         FeatureCollection featureCollection = FeatureCollection.fromJson(server.getJson());
         this.landmarks = new ArrayList<>();
         for (Feature feature : featureCollection.features()) {
             this.landmarks.add((Point) feature.geometry());
         }
+    }
+
+    public LongLat parseCoordinate (String json) {
+        json = json.split("},\n  \"words")[0];
+        json = json.split("coordinates\": \\{")[1];
+        json = json.replaceAll(" ","");
+        json = json.replaceAll("\n","");
+        json = json.replaceAll("\"lng\":","");
+        json = json.replaceAll("\"lat\":","");
+        double lng = Double.valueOf(json.split(",")[0]);
+        double lat = Double.valueOf(json.split(",")[1]);
+        return (new LongLat(lng, lat));
+    }
+
+    /**
+     * Converting WhatThreeWords addresses into coordinates.
+     * @param whatThreeWords WhatThreeWords, three words in one String, each word is
+     *              separated with "." from others.
+     */
+    // TODO: 2021/10/26  catch this exception when calling this function.
+    public void wordsToLongLat(String whatThreeWords) {
+        String[] words = whatThreeWords.split(".");
+        if (words.length != 3) {
+            throw (new IllegalArgumentException());
+        }
+        String pathJson = Const.PATH_WORDS + "/" + words[0] + "/" + words[1] + "/" +
+                words[2] + Const.DETAIL;
+        server.connectHttp(pathJson);
+        String json = server.getJson();
+        this.deliverTo = parseCoordinate(json);
     }
 
     public ArrayList<String> getItemNames(ServerConnector sc, String orderNo) {

@@ -25,13 +25,19 @@ public class Const {
     public static final Double DISTANCE_MOVE = 0.00015;
 
     // Directory of menus.json in the server
-    public static final String URL_MENUS = "/menus/menus.json";
+    public static final String PATH_MENUS = "/menus/menus.json";
 
     // Directory of no-fly-zones.geojson in the server
-    public static final String URL_NO_FLY_ZONES = "/buildings/no-fly-zones.geojson";
+    public static final String PATH_NO_FLY_ZONES = "/buildings/no-fly-zones.geojson";
 
     // Directory of landmarks.geojson in the server
-    public static final String URL_LANDMARKS = "/buildings/landmarks.geojson";
+    public static final String PATH_LANDMARKS = "/buildings/landmarks.geojson";
+
+    // Directory of words folder in the server
+    public static final String PATH_WORDS = "/words/";
+
+    // File name of delivery destination detail
+    public static final String DETAIL = "/details.json";
 
     // Directory of landmarks.geojson in the server
     public static final String DATABASE = "/derbyDB";

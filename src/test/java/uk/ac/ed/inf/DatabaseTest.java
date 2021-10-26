@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
 
@@ -50,6 +51,21 @@ public class DatabaseTest {
             locList.add(loc);
         }
         System.out.println(locList.size());
+    }
+
+    @Test
+    public void andy() {
+        ServerConnector sc = new ServerConnector(Const.IP, "9898");
+        sc.connectHttp("/words/fund/dreams/years/details.json");
+        String s = sc.getJson();
+        s = s.split("},\n  \"words")[0];
+        s = s.split("coordinates\": \\{")[1];
+        s = s.replaceAll(" ","");
+        s = s.replaceAll("\n","");
+        s = s.replaceAll("\"lng\":","");
+        s = s.replaceAll("\"lat\":","");
+        double lng = Double.valueOf(s.split(",")[0]);
+        double lat = Double.valueOf(s.split(",")[1]);
     }
 }
 //e3dde4f9|2023-10-17|s2314239|surely.native.foal
