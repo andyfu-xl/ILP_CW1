@@ -36,12 +36,10 @@ public class Order {
      * The estimation ignores the best
      *
      * @param dronePosition position of the drone, a LongLat object
-     * @param name name of the server for parsing WhatThreeWords addresses
-     * @param port port of the serve
+     * @param parser that can parse data from the server
      * @return estimated number of moves to deliver this order
      */
-    public int estimateMoves(LongLat dronePosition, String name, String port) {
-        DataParser parser = new DataParser(name, port);
+    public int estimateMoves(LongLat dronePosition, DataParser parser) {
         ArrayList<LongLat> coordinates = new ArrayList<>();
         for (String address : this.shopAddress) {
             // convert WhatThreeWord address into LongLat object.
@@ -65,6 +63,7 @@ public class Order {
             }else {
                 distance += path2;
                 // if path2 is shorter, the drone would visit the second shop first
+                this.shopCoordinate = new ArrayList<>();
                 this.shopCoordinate.add(coordinates.get(1));
                 this.shopCoordinate.add(coordinates.get(0));
             }
@@ -83,13 +82,12 @@ public class Order {
      * the utility of an order is delivery cost divided by estimated moves.
      *
      * @param dronePosition position of the drone, a LongLat object.
-     * @param name name of the server for parsing WhatThreeWords addresses.
-     * @param port port of the server
+     * @param parser that can parse data from the server
      * @return deliveryCost divided by estimated moves
      */
-    public double estimateUtility (LongLat dronePosition, String name, String port) {
-        calCostAndGetShops(name, port);
-        int moves = estimateMoves(dronePosition, name, port);
+    public double estimateUtility (LongLat dronePosition, DataParser parser) {
+        calCostAndGetShops(parser);
+        int moves = estimateMoves(dronePosition, parser);
         this.utility = this.cost / moves;
         return this.cost / moves;
     }
@@ -97,12 +95,10 @@ public class Order {
     /**
      *Calculate the cost in pence of all items delivered by drone.
      *
-     * @param name name/IP of the server to connect with
-     * @param port port number of the server to connect with
+     * @param parser that can parse data from the server
      */
-    public void calCostAndGetShops(String name, String port) {
+    public void calCostAndGetShops(DataParser parser) {
         int foodCost = 0;
-        DataParser parser = new DataParser(name, port);
         ArrayList<String> shopLocations = new ArrayList<>();
         int numberOfItems = 0;
         /* for each items, we need to loop through all shops and their

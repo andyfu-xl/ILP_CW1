@@ -15,6 +15,9 @@ public class DatabaseConnection {
     private Statement statement;
     private Connection conn;
 
+    public Statement getStatement() { return statement; }
+    public Connection getConn() { return conn; }
+
     /**
      * Constructor of ServerConnector Class.
      *
@@ -24,6 +27,7 @@ public class DatabaseConnection {
     public DatabaseConnection(String name, String port) {
         this.name = name;
         this.port = port;
+        connectJDBC(Const.DATABASE);
     }
 
     /**
@@ -88,4 +92,5 @@ public class DatabaseConnection {
         }
         return orderList;
     }
+
 }

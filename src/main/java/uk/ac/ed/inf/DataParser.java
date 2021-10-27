@@ -74,8 +74,9 @@ public class DataParser {
      */
     // TODO: 2021/10/26  catch this exception when calling this function.
     public LongLat wordsToLongLat(String whatThreeWords) {
-        String[] words = whatThreeWords.split(".");
+        String[] words = whatThreeWords.split("\\.");
         if (words.length != 3) {
+            System.out.println("Error: Invalid WhatThreeWords " + whatThreeWords);
             throw (new IllegalArgumentException());
         }
         String pathJson = Const.PATH_WORDS + "/" + words[0] + "/" + words[1] + "/" +
