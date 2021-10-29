@@ -47,7 +47,7 @@ public class DatabaseTest {
                 "select * from ORDERS where DELIVERYDATE=(?)";
         PreparedStatement psCourseQuery =
                 dc.getConn().prepareStatement(coursesQuery);
-        psCourseQuery.setString(1, "2022-1-2");
+        psCourseQuery.setString(1, "2022-01-01");
         ArrayList<String> locList = new ArrayList<>();
         ResultSet rs = psCourseQuery.executeQuery();
         while (rs.next()) {
@@ -56,6 +56,23 @@ public class DatabaseTest {
             locList.add(loc);
         }
         System.out.println(locList.size());
+    }
+
+
+    @Test
+    public void search() {
+        DatabaseConnection database = new DatabaseConnection("localhost", "9876");
+        DataParser parser = new DataParser("localhost", "9898");
+        Drone drone = new Drone("2022-11-11", parser, database);
+        drone.selectOrderByUtility();
+        drone.dronePosition = parser.wordsToLongLat(drone.getOrders().get(1).getDeliverTo());
+        //drone.getOrders().get(0).getShopCoordinate().get(0);//
+        drone.pathForOrder();
+    }
+
+    @Test
+    public void finalTest() {
+        App.main(new String[]{"11", "11", "2022", "9898", "9876"});
     }
 
     @Test
@@ -87,28 +104,18 @@ public class DatabaseTest {
 
     @Test
     public void t() {
-        ArrayList<Integer[]> cost = new ArrayList<>();
-        cost.add(new Integer[]{12, 1});
-        cost.add(new Integer[]{13, 2});
-        cost.add(new Integer[]{11, 3});
-        cost.add(new Integer[]{10, 4});
-        cost.add(new Integer[]{100, 5});
-        cost.add(new Integer[]{1, 6});
-        cost.add(new Integer[]{19, 7});
-        cost.add(new Integer[]{19, 8});
-        cost.add(new Integer[]{7, 9});
+        LongLat l1 = new LongLat(12.1, 11.0);
+        String s1 = l1.longitude + "," + l1.latitude;
+        LongLat l2 = new LongLat(12.1, 11.0);
+        String s2 = l2.longitude + "," + l2.latitude;
+        ArrayList<String> ss = new ArrayList<>();
+        ss.add(s1);
+        System.out.println(ss.contains(s2));
+    }
 
-        cost.sort(new Comparator<Integer[]>() {
-            @Override
-            public int compare(Integer[] o1, Integer[] o2) {
-                return o1[0].compareTo(o2[0]);
-            }
-        });
-        Collections.reverse(cost);
-        for (Integer[] i : cost) {
-            System.out.println(i[1]);
-        }
-
+    @Test
+    public void angle() {
+        System.out.println((360) % 360);
     }
 }
 //e3dde4f9|2023-10-17|s2314239|surely.native.foal

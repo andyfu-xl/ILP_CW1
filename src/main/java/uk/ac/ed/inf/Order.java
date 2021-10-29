@@ -30,6 +30,7 @@ public class Order {
     public ArrayList<String> getItem() { return items; }
     public int getCost() { return cost; }
     public double getUtility() { return utility; }
+    public ArrayList<LongLat> getShopCoordinate() { return shopCoordinate; }
 
     /**
      * Estimating moves required for the drone to deliver the order
