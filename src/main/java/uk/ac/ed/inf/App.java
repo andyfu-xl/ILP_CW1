@@ -23,6 +23,7 @@ public class App {
         Drone drone = new Drone(date, parser, database);
         drone.dronePosition = new LongLat(Const.APT_LONG, Const.APT_LAT);
         List<Point> pl = new ArrayList<>();
+        pl.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
         while (drone.pathForOrder()) {
             pl.addAll(drone.getFlightLine());
 
@@ -30,12 +31,13 @@ public class App {
                 break;
             }
             drone.selectOrderByUtility();
-            System.out.println(drone.getOrders().size() + "ggggggggggggggggggg");
+            //System.out.println(drone.getOrders().size() + "ggggggggggggggggggg");
         }
         LineString lineString = LineString.fromLngLats(pl);
         Geometry geometry = lineString;
         Feature f = Feature.fromGeometry(geometry);
         FeatureCollection fc = FeatureCollection.fromFeature(f);
         System.out.println(fc.toJson());
+        System.out.println(drone.getBattery());
     }
 }

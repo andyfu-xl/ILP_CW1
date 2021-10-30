@@ -115,7 +115,10 @@ public class DatabaseTest {
 
     @Test
     public void angle() {
-        System.out.println((360) % 360);
+        double latDiff = 	55.9458 - 	55.9447;
+        double lngDiff = 	-3.1881 - 	-3.1852;
+        double direction = Math.toDegrees(Math.atan2(latDiff, lngDiff));
+        System.out.println(direction);
     }
 }
 //e3dde4f9|2023-10-17|s2314239|surely.native.foal
