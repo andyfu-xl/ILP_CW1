@@ -205,10 +205,12 @@ public class Drone {
      *
      * @param currentPosition the current position which the drone will move to.
      * @param nextPosition    the next position which the drone will move to.
-     * @param tangent         whether tangent to a shape is allowed.
+     * @param buildingNodes   is true if one move can start or end with one node on any building
+     *                        without passing through the building. This is set to true when
+     *                        searching for the frame of the shortest path.
      * @return whether the move is valid.
      */
-    private boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean tangent) {
+    private boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean buildingNodes) {
         if (!dronePosition.isConfined() | !nextPosition.isConfined()) {
             return false;
         }
@@ -225,7 +227,7 @@ public class Drone {
                 double y2 = building.get(i + 1).latitude();
                 Line2D line = new Line2D.Double();
                 line.setLine(x1, y1, x2, y2);
-                if (tangent) {
+                if (buildingNodes) {
                     int coincideBetweenTwoLines = 0;
                     if (x1 == currentPosition.longitude & y1 == currentPosition.latitude) {
                         coincideBetweenTwoLines++;
@@ -254,7 +256,7 @@ public class Drone {
                 }
             }
         }
-        if (tangent & cornerIntersect > 2) {
+        if (buildingNodes & cornerIntersect > 2) {
             return false;
         }
         return true;

@@ -80,4 +80,5 @@ public class LongLat {
                 + Const.DISTANCE_MOVE * Math.sin(Math.toRadians(angle));
         return nextPos;
     }
+
 }

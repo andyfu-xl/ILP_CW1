@@ -12,7 +12,7 @@ public class Order {
     private ArrayList<String> shopAddress;
     private ArrayList<LongLat> shopCoordinate;
     private double utility;
-
+    
     public Order(String orderNo, String deliveryDate, String customer,
                  String deliverTo, ArrayList<String> items) {
         this.orderNo = orderNo;
@@ -28,7 +28,7 @@ public class Order {
     public String getCustomer() { return customer; }
     public String getDeliverTo() { return deliverTo; }
     public ArrayList<String> getItem() { return items; }
-    public int getCost() { return cost; }
+    public int getCost() { return this.cost; }
     public double getUtility() { return utility; }
     public ArrayList<LongLat> getShopCoordinate() { return shopCoordinate; }
 
