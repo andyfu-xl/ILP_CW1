@@ -51,38 +51,21 @@ public class App {
         drone.map.dronePosition = new LongLat(Const.APT_LONG, Const.APT_LAT);
         List<Point> pl = new ArrayList<>();
         pl.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
-        if (drone.getOrders().size() == 0) {
-            System.out.println("Error: No order for current day");
-            writeFile(" ", date);
-            return;
-        }
-        drone.pathForOrder();
-        while (true) {
+        while (drone.pathForOrder()) {
             pl.addAll(drone.map.getFlightLine());
-            // the drone cannot fly back to the APT or cannot finish delivering the order.
-            if (!drone.pathForOrder()) {
-                if (drone.backAPT(drone.map.dronePosition)) {
-                    pl.addAll(drone.map.getFlightLineBack());
-                    break;
-                }
-                else {
-                    System.out.println("Error: The drone cannot back to the APT.");
-                    return;
-                }
-            }
+
             if (drone.getOrders().size() == 0) {
-                System.out.println(drone.backAPT(drone.map.dronePosition));
-                if (drone.backAPT(drone.map.dronePosition)) {
-                    //pl.addAll(drone.map.getFlightLineBack());
-                    break;
-                }
-                else {
-                    System.out.println("Error: The drone cannot back to the APT.");
-                    return;
-                }
+                break;
             }
             drone.selectOrderByUtility();
             //System.out.println(drone.getOrders().size() + "ggggggggggggggggggg");
+        }
+        if (drone.backAPT(drone.map.dronePosition)) {
+            pl.addAll(drone.map.getFlightLineBack());
+        }
+        else {
+            System.out.println("Error: The drone cannot back to the APT.");
+            return;
         }
         LineString lineString = LineString.fromLngLats(pl);
         Geometry geometry = lineString;

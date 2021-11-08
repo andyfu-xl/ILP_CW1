@@ -65,7 +65,7 @@ public class Drone {
 
     public boolean backAPT(LongLat pos) {
         LongLat apt = new LongLat(Const.APT_LONG, Const.APT_LAT);
-        if (pos.closeTo(apt) | battery >= 0) {
+        if (pos.closeTo(apt) & battery >= 0) {
             return true;
         }
         Map.Node routeBack = map.aStarSearch(pos, apt);

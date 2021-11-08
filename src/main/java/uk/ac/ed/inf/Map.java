@@ -50,6 +50,7 @@ public class Map {
     public int pathBackFromFrame(ArrayList<Point> frame) {
         int moveNumber = 0;
         if (frame.size() <= 1) {
+            System.out.println("ttttttttttttttttt");
             return moveNumber;
         }
         LongLat initialPos = new LongLat(frame.get(0).longitude(), frame.get(0).latitude());
