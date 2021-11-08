@@ -65,14 +65,14 @@ public class DatabaseTest {
         DataParser parser = new DataParser("localhost", "9898");
         Drone drone = new Drone("2022-11-11", parser, database);
         drone.selectOrderByUtility();
-        drone.dronePosition = parser.wordsToLongLat(drone.getOrders().get(1).getDeliverTo());
+        drone.map.dronePosition = parser.wordsToLongLat(drone.getOrders().get(1).getDeliverTo());
         //drone.getOrders().get(0).getShopCoordinate().get(0);//
         drone.pathForOrder();
     }
 
     @Test
     public void finalTest() {
-        App.main(new String[]{"12", "12", "2022", "9898", "9876"});
+        App.main(new String[]{"01", "01", "2022", "9898", "9876"});
     }
 
     @Test
@@ -83,8 +83,8 @@ public class DatabaseTest {
 //        drone.getNoFlyZones().get(0).coordinates().get(0);
 //        double lng = drone.getNoFlyZones().get(0).coordinates().get(0).size();
 //        System.out.println(drone.getNoFlyZones().get(0).coordinates().get(0));
-        for (int i = 0; i < drone.getNoFlyZones().size(); i++) {
-            List<Point> building = drone.getNoFlyZones().get(i).coordinates().get(0);
+        for (int i = 0; i < drone.map.getNoFlyZones().size(); i++) {
+            List<Point> building = drone.map.getNoFlyZones().get(i).coordinates().get(0);
             for (int j = 0; j < building.size()-1; j++) {
                 double x1 = building.get(j).longitude();
                 double y1 = building.get(j).latitude();

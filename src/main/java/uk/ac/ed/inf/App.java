@@ -26,9 +26,9 @@ public class App {
                     "drone-" + date + ".geojson");
             writer.write(json);
             writer.close();
-            System.out.println("flightpath GeoJson successfully created!");
+            System.out.println("Flightpath GeoJson file created.");
         } catch (IOException e) {
-            System.out.println("Fatal error: flightpath GeoJson wasn't created.");
+            System.out.println("Error: Failed to create flightpath geojson file.");
             e.printStackTrace();
         }
     }
@@ -48,14 +48,38 @@ public class App {
         DataParser parser = new DataParser(Const.IP, portHttp);
         DatabaseConnection database = new DatabaseConnection(Const.IP, portDatabase);
         Drone drone = new Drone(date, parser, database);
-        drone.dronePosition = new LongLat(Const.APT_LONG, Const.APT_LAT);
+        drone.map.dronePosition = new LongLat(Const.APT_LONG, Const.APT_LAT);
         List<Point> pl = new ArrayList<>();
         pl.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
-        while (drone.pathForOrder()) {
-            pl.addAll(drone.getFlightLine());
-
+        if (drone.getOrders().size() == 0) {
+            System.out.println("Error: No order for current day");
+            writeFile(" ", date);
+            return;
+        }
+        drone.pathForOrder();
+        while (true) {
+            pl.addAll(drone.map.getFlightLine());
+            // the drone cannot fly back to the APT or cannot finish delivering the order.
+            if (!drone.pathForOrder()) {
+                if (drone.backAPT(drone.map.dronePosition)) {
+                    pl.addAll(drone.map.getFlightLineBack());
+                    break;
+                }
+                else {
+                    System.out.println("Error: The drone cannot back to the APT.");
+                    return;
+                }
+            }
             if (drone.getOrders().size() == 0) {
-                break;
+                System.out.println(drone.backAPT(drone.map.dronePosition));
+                if (drone.backAPT(drone.map.dronePosition)) {
+                    //pl.addAll(drone.map.getFlightLineBack());
+                    break;
+                }
+                else {
+                    System.out.println("Error: The drone cannot back to the APT.");
+                    return;
+                }
             }
             drone.selectOrderByUtility();
             //System.out.println(drone.getOrders().size() + "ggggggggggggggggggg");
@@ -65,6 +89,6 @@ public class App {
         Feature f = Feature.fromGeometry(geometry);
         FeatureCollection fc = FeatureCollection.fromFeature(f);
         writeFile(fc.toJson(), date);
-        System.out.println(drone.getBattery());
+        System.out.println(fc.toJson());
     }
 }
