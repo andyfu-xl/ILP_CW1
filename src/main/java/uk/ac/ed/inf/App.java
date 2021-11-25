@@ -40,11 +40,12 @@ public class App {
         }
         String portDatabase = args[4];
         String portHttp = args[3];
-        String dd = args[2];
+        String dd = args[0];
         String mm = args[1];
-        String year = args[0];
-        date = dd + "-" + mm + "-" + year;
+        String year = args[2];
+        date = year + "-" + mm + "-" + dd;
 
+        // TODO: 2021/11/15 add hovering step
         DataParser parser = new DataParser(Const.IP, portHttp);
         DatabaseConnection database = new DatabaseConnection(Const.IP, portDatabase);
         Drone drone = new Drone(date, parser, database);
@@ -68,9 +69,10 @@ public class App {
             return;
         }
         LineString lineString = LineString.fromLngLats(pl);
-        Geometry geometry = lineString;
-        Feature f = Feature.fromGeometry(geometry);
+        //Geometry geometry = lineString;
+        Feature f = Feature.fromGeometry(lineString);
         FeatureCollection fc = FeatureCollection.fromFeature(f);
+        date = dd + "-" + mm + "-" + year;
         writeFile(fc.toJson(), date);
         System.out.println(fc.toJson());
     }

@@ -63,7 +63,7 @@ public class DatabaseTest {
     public void search() {
         DatabaseConnection database = new DatabaseConnection("localhost", "9876");
         DataParser parser = new DataParser("localhost", "9898");
-        Drone drone = new Drone("2022-11-11", parser, database);
+        Drone drone = new Drone("2022-01-01", parser, database);
         drone.selectOrderByUtility();
         drone.map.dronePosition = parser.wordsToLongLat(drone.getOrders().get(1).getDeliverTo());
         //drone.getOrders().get(0).getShopCoordinate().get(0);//

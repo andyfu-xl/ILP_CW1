@@ -1,12 +1,12 @@
 package uk.ac.ed.inf;
 
 public class Path {
-    private String orderNo;
-    private double fromLongitude;
-    private double fromLatitude;
-    private int angle;
-    private double toLongitude;
-    private double toLatitude;
+    public String orderNo;
+    public double fromLongitude;
+    public double fromLatitude;
+    public int angle;
+    public double toLongitude;
+    public double toLatitude;
 
     public Path(String orderNo, double fromLongitude, double fromLatitude,
                 int angle, double toLongitude, double toLatitude) {

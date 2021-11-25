@@ -1,6 +1,7 @@
 package uk.ac.ed.inf;
 
 import java.awt.geom.Line2D;
+import java.beans.beancontext.BeanContextChild;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -89,34 +90,37 @@ public class Drone {
         LongLat initialPosition = map.dronePosition;
         LongLat deliverTo = parser.wordsToLongLat(currentOrder.getDeliverTo());
         // angle of the first node are set to -1 as there is no last move
-        ArrayList<Map.Node> linkedNodes = new ArrayList<>();
-        Map.Node goTo;
+        ArrayList<Map.Node> allRoutes = new ArrayList<>();
+        Map.Node routeToNext;
         try {
             for (LongLat loc : currentOrder.getShopCoordinate()) {
-                goTo = map.aStarSearch(map.dronePosition, loc);
-                //goTo = aStarSearch(initialState, loc);
-                linkedNodes.add(goTo);
-                map.dronePosition = goTo.position;
+                routeToNext = map.aStarSearch(map.dronePosition, loc);
+                allRoutes.add(routeToNext);
+//                Map.Node hoveringStep = new Map.Node(0, 0, loc, -999);
+//                allRoutes.add(hoveringStep);
+                map.dronePosition = routeToNext.position;
                 //System.out.println("HHHHHHHHHHHHHH");
             }
             //System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAA");
             //System.out.println(initialState.position.longitude + "," + initialState.position.latitude);
             //System.out.println(deliverTo.longitude + "," + deliverTo.latitude);
             //goTo = aStarSearch(initialState, deliverTo);
-            goTo = map.aStarSearch(map.dronePosition, deliverTo);
+            routeToNext = map.aStarSearch(map.dronePosition, deliverTo);
+            allRoutes.add(routeToNext);
+//            Map.Node hoveringStep = new Map.Node(0, 0, deliverTo, -999);
+//            allRoutes.add(hoveringStep);
             //System.out.println("goTo is NUll: " + (goTo == null));
-            linkedNodes.add(goTo);
-            map.dronePosition = goTo.position;
+            map.dronePosition = routeToNext.position;
         } catch (Exception e) {
             e.printStackTrace();
             map.dronePosition = initialPosition;
             return false;
         }
-        if (linkedNodes == null) {
+        if (allRoutes == null) {
             map.dronePosition = initialPosition;
             return false;
         }
-        for (Map.Node n : linkedNodes) {
+        for (Map.Node n : allRoutes) {
             if (n == null) {
                 map.dronePosition = initialPosition;
                 return false;
@@ -125,9 +129,12 @@ public class Drone {
 //        flightPath = new ArrayList<>();
         ArrayList<Point> pathFrame = new ArrayList<>();
         int moveNumber = 0;
-        for (Map.Node n : linkedNodes) {
+        for (Map.Node n : allRoutes) {
 //            ArrayList<Path> tempPath = new ArrayList<>();
             ArrayList<Point> tempPoints = new ArrayList<>();
+//            if (n.parent != null) {
+//                tempPoints.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
+//            }
             while (n.parent != null) {
 //                Path path = new Path(currentOrder.getOrderNo(), n.position.longitude,
 //                        n.position.latitude, n.angle, n.parent.position.longitude,
@@ -142,6 +149,10 @@ public class Drone {
 //            Collections.reverse(tempPath);
             pathFrame.addAll(tempPoints);
 //            flightPath.addAll(tempPath);
+        }
+        System.out.println("hhhhhhhh");
+        for (Point p : pathFrame) {
+            System.out.println(p.longitude() + ",,,,," + p.latitude());
         }
         moveNumber = map.pathFromFrame(pathFrame, currentOrder);
         battery -= moveNumber;

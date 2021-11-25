@@ -68,7 +68,7 @@ public class DatabaseConnection {
 
     /**
      * Read order details from the server, store orders as list of order objects.
-     * @return
+     * @return a list of order objects
      */
     public ArrayList<Order> readOrders(String date) {
         final String coursesQuery =
@@ -91,6 +91,38 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
         return orderList;
+    }
+
+    /**
+     * create table called flightpath to store the flightpath data, drop the table if
+     * there is already a table called flightpath
+     */
+    public void createTable() {
+        try {
+            DatabaseMetaData databaseMetadata = this.conn.getMetaData();
+            ResultSet resultSet =
+                    databaseMetadata.getTables(null, null, "STUDENTS", null);
+            if (resultSet.next()) {
+                this.statement.execute("drop table flightpath");
+            }
+            this.statement.execute("create table flightpath(" +
+                    "        orderNo char(8)," +
+                    "        fromLongitude double," +
+                    "        fromLatitude double," +
+                    "        angle integer," +
+                    "        toLongitude double," +
+                    "        toLatitude double)");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+
+    public void writeSteps() {
+        createTable();
+
+
+
     }
 
 }

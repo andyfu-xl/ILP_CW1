@@ -41,11 +41,25 @@ public class Map {
         this.noFlyZones = noFlyZones;
     }
 
-    public ArrayList<Path> getFlightPath() { return flightPath; }
-    public List<Point> getFlightLine() { return flightLine; }
-    public ArrayList<Path> getFlightPathBack() { return flightPathBack; }
-    public List<Point> getFlightLineBack() { return flightLineBack; }
-    public ArrayList<Polygon> getNoFlyZones() { return noFlyZones; }
+    public ArrayList<Path> getFlightPath() {
+        return flightPath;
+    }
+
+    public List<Point> getFlightLine() {
+        return flightLine;
+    }
+
+    public ArrayList<Path> getFlightPathBack() {
+        return flightPathBack;
+    }
+
+    public List<Point> getFlightLineBack() {
+        return flightLineBack;
+    }
+
+    public ArrayList<Polygon> getNoFlyZones() {
+        return noFlyZones;
+    }
 
     public int pathBackFromFrame(ArrayList<Point> frame) {
         int moveNumber = 0;
@@ -94,7 +108,19 @@ public class Map {
         flightLine = new ArrayList<>();
         for (int i = 1; i < frame.size(); i++) {
             LongLat target = new LongLat(frame.get(i).longitude(), frame.get(i).latitude());
-            double heuristic = target.distanceTo(initialPos);
+//            System.out.println(frame.get(i).longitude() + ",,,,," + frame.get(i).latitude());
+            if ((target.latitude == frame.get(i - 1).latitude()) &
+                    (target.longitude == frame.get(i - 1).longitude())) {
+                Path previousPath = this.flightPath.get(this.flightPath.size() - 1);
+                Path path = new Path(currentOrder.getOrderNo(), previousPath.toLongitude,
+                        previousPath.toLatitude, -999, previousPath.toLongitude,
+                        previousPath.toLongitude);
+                Point point = this.flightLine.get(this.flightLine.size() - 1);
+                this.flightPath.add(path);
+                this.flightLine.add(point);
+                continue;
+            }
+
 //            System.out.println("called aStarSearchHelper");
 //            System.out.println(current.position.longitude + "," + current.position.latitude);
 //            System.out.println(target.longitude + "," + target.latitude);
