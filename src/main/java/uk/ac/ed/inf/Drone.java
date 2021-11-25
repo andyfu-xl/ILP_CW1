@@ -79,6 +79,7 @@ public class Drone {
         pathFrame.add(Point.fromLngLat(routeBack.position.longitude, routeBack.position.latitude));
         Collections.reverse(pathFrame);
         moveNumber = map.pathBackFromFrame(pathFrame);
+        System.out.println(moveNumber);
         if (battery >= moveNumber) {
             return true;
         }
@@ -150,15 +151,16 @@ public class Drone {
             pathFrame.addAll(tempPoints);
 //            flightPath.addAll(tempPath);
         }
-        System.out.println("hhhhhhhh");
-        for (Point p : pathFrame) {
-            System.out.println(p.longitude() + ",,,,," + p.latitude());
-        }
+//        System.out.println("hhhhhhhh");
+//        for (Point p : pathFrame) {
+//            System.out.println(p.longitude() + ",,,,," + p.latitude());
+//        }
         moveNumber = map.pathFromFrame(pathFrame, currentOrder);
         battery -= moveNumber;
         System.out.println("[" + map.dronePosition.longitude + "," + map.dronePosition.latitude + "],");
         if (!backAPT(map.dronePosition)) {
             map.dronePosition = initialPosition;
+            battery += moveNumber;
             return false;
         }
         return true;

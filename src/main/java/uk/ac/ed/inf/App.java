@@ -54,13 +54,14 @@ public class App {
         pl.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
         while (drone.pathForOrder()) {
             pl.addAll(drone.map.getFlightLine());
-
+            System.out.println(drone.getBattery());
             if (drone.getOrders().size() == 0) {
                 break;
             }
             drone.selectOrderByUtility();
             //System.out.println(drone.getOrders().size() + "ggggggggggggggggggg");
         }
+        System.out.println(drone.pathForOrder()); //uuuuuu
         if (drone.backAPT(drone.map.dronePosition)) {
             pl.addAll(drone.map.getFlightLineBack());
         }
@@ -75,5 +76,6 @@ public class App {
         date = dd + "-" + mm + "-" + year;
         writeFile(fc.toJson(), date);
         System.out.println(fc.toJson());
+        System.out.println(drone.getBattery());
     }
 }

@@ -116,6 +116,7 @@ public class Map {
                         previousPath.toLatitude, -999, previousPath.toLongitude,
                         previousPath.toLongitude);
                 Point point = this.flightLine.get(this.flightLine.size() - 1);
+                moveNumber++;
                 this.flightPath.add(path);
                 this.flightLine.add(point);
                 continue;
