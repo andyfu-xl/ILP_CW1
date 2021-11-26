@@ -21,6 +21,7 @@ public class Drone {
     public Map map;
     private ArrayList<Path> flightPathBack;
     private List<Point> flightLineBack;
+    private int batteryBack;
 
     public Drone(String date, DataParser parser, DatabaseConnection database) {
         this.date = date;
@@ -40,6 +41,10 @@ public class Drone {
 
     public int getBattery() {
         return battery;
+    }
+
+    public int getBatteryBack() {
+        return batteryBack;
     }
 
     private void readDrone() {
@@ -79,7 +84,7 @@ public class Drone {
         pathFrame.add(Point.fromLngLat(routeBack.position.longitude, routeBack.position.latitude));
         Collections.reverse(pathFrame);
         moveNumber = map.pathBackFromFrame(pathFrame);
-        System.out.println(moveNumber);
+        batteryBack = moveNumber;
         if (battery >= moveNumber) {
             return true;
         }

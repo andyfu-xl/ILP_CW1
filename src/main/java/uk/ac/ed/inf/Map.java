@@ -114,7 +114,7 @@ public class Map {
                 Path previousPath = this.flightPath.get(this.flightPath.size() - 1);
                 Path path = new Path(currentOrder.getOrderNo(), previousPath.toLongitude,
                         previousPath.toLatitude, -999, previousPath.toLongitude,
-                        previousPath.toLongitude);
+                        previousPath.toLatitude);
                 Point point = this.flightLine.get(this.flightLine.size() - 1);
                 moveNumber++;
                 this.flightPath.add(path);
@@ -131,9 +131,9 @@ public class Map {
             ArrayList<Path> tempPath = new ArrayList<>();
             ArrayList<Point> tempLine = new ArrayList<>();
             while (n.parent != null) {
-                Path path = new Path(currentOrder.getOrderNo(), n.position.longitude,
-                        n.position.latitude, n.angle, n.parent.position.longitude,
-                        n.parent.position.latitude);
+                Path path = new Path(currentOrder.getOrderNo(), n.parent.position.longitude,
+                        n.parent.position.latitude, n.angle, n.position.longitude,
+                        n.position.latitude);
                 moveNumber++;
                 tempPath.add(path);
                 tempLine.add(Point.fromLngLat(n.position.longitude, n.position.latitude));

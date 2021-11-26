@@ -3,6 +3,7 @@ package uk.ac.ed.inf;
 import java.net.http.HttpClient;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseConnection {
 
@@ -101,7 +102,7 @@ public class DatabaseConnection {
         try {
             DatabaseMetaData databaseMetadata = this.conn.getMetaData();
             ResultSet resultSet =
-                    databaseMetadata.getTables(null, null, "STUDENTS", null);
+                    databaseMetadata.getTables(null, null, "FLIGHTPATH", null);
             if (resultSet.next()) {
                 this.statement.execute("drop table flightpath");
             }
@@ -114,15 +115,34 @@ public class DatabaseConnection {
                     "        toLatitude double)");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            System.err.println("Error: Failed to create new table.");
         }
+        System.out.println("New table created successfully.");
     }
 
-
-    public void writeSteps() {
+    /**
+     *
+     */
+    public void writePaths(List<Path> paths) {
         createTable();
-
-
-
+        try {
+            PreparedStatement psPath = conn.prepareStatement(
+                    "insert into flightpath values (?, ?, ?, ?, ?, ?)"
+            );
+            for (Path path : paths) {
+                psPath.setString(1, path.orderNo);
+                psPath.setDouble(2, path.fromLongitude);
+                psPath.setDouble(3, path.fromLatitude);
+                psPath.setInt(4, path.angle);
+                psPath.setDouble(5, path.toLongitude);
+                psPath.setDouble(6, path.toLatitude);
+                psPath.execute();
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            System.err.println("Error: Failed to write paths into database.");
+        }
+        System.out.println("Path writen into database.");
     }
 
 }

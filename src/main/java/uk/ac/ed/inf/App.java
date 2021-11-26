@@ -50,32 +50,35 @@ public class App {
         DatabaseConnection database = new DatabaseConnection(Const.IP, portDatabase);
         Drone drone = new Drone(date, parser, database);
         drone.map.dronePosition = new LongLat(Const.APT_LONG, Const.APT_LAT);
-        List<Point> pl = new ArrayList<>();
-        pl.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
+        List<Point> points = new ArrayList<>();
+        points.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
+        List<Path> paths = new ArrayList<>();
         while (drone.pathForOrder()) {
-            pl.addAll(drone.map.getFlightLine());
-            System.out.println(drone.getBattery());
+            points.addAll(drone.map.getFlightLine());
+            paths.addAll(drone.map.getFlightPath());
+            //System.out.println(drone.getBattery());
             if (drone.getOrders().size() == 0) {
                 break;
             }
             drone.selectOrderByUtility();
             //System.out.println(drone.getOrders().size() + "ggggggggggggggggggg");
         }
-        System.out.println(drone.pathForOrder()); //uuuuuu
         if (drone.backAPT(drone.map.dronePosition)) {
-            pl.addAll(drone.map.getFlightLineBack());
+            points.addAll(drone.map.getFlightLineBack());
+            paths.addAll(drone.map.getFlightPathBack());
         }
         else {
             System.out.println("Error: The drone cannot back to the APT.");
             return;
         }
-        LineString lineString = LineString.fromLngLats(pl);
-        //Geometry geometry = lineString;
+        database.writePaths(paths);
+        LineString lineString = LineString.fromLngLats(points);
         Feature f = Feature.fromGeometry(lineString);
         FeatureCollection fc = FeatureCollection.fromFeature(f);
         date = dd + "-" + mm + "-" + year;
         writeFile(fc.toJson(), date);
         System.out.println(fc.toJson());
-        System.out.println(drone.getBattery());
+        System.out.println(drone.getBatteryBack());
+        System.out.println(1500 - drone.getBattery() + drone.getBatteryBack());
     }
 }

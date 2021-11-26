@@ -58,5 +58,5 @@ public class Const {
     public static final String IP = "localhost";
 
     // Drone has limited power which can move at most 1500 moves
-    public static final int MAX_POWER = 500;
+    public static final int MAX_POWER = 1500;
 }

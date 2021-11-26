@@ -15,7 +15,7 @@ public class Path {
         this.fromLatitude = fromLatitude;
         this.angle = angle;
         this.toLongitude = toLongitude;
-        this.fromLatitude = toLatitude;
+        this.toLatitude = toLatitude;
     }
 
 }
