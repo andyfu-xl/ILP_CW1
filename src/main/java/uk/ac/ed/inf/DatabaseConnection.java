@@ -5,17 +5,21 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Connect with the database, read and write data.
+ */
 public class DatabaseConnection {
 
     /* Just have one HttpClient, use it multiple times. We have one
        client so it's declared as static, it won't update (final) */
     private static final HttpClient client = HttpClient.newHttpClient();
-
+    // private variables
     private String name;
     private String port;
     private Statement statement;
     private Connection conn;
 
+    // getters
     public Statement getStatement() { return statement; }
     public Connection getConn() { return conn; }
 
@@ -43,12 +47,18 @@ public class DatabaseConnection {
             this.conn = DriverManager.getConnection(jdbcString);
             this.statement = this.conn.createStatement();
         } catch (SQLException e) {
-            System.out.println("Fatal error: Unable to connect to " + this.name
+            System.err.println("Fatal error: Unable to connect to " + this.name
                     + " at port " + this.port + ".");
             e.printStackTrace();
         }
     }
 
+    /**
+     * Read all item names of a given order
+     *
+     * @param orderNo order number of the order
+     * @return All item names as Strings in a Arraylist
+     */
     public ArrayList<String> getItemNames(String orderNo) {
         final String coursesQuery =
                 "select * from orderDetails where orderNo=(?)";
@@ -61,7 +71,7 @@ public class DatabaseConnection {
                 itemNames.add(rs.getString("item"));
             }
         } catch (SQLException e) {
-            System.out.println("Error: Failed to retrieve items of order from date base.");
+            System.err.println("Error: Failed to retrieve items of order from date base.");
             e.printStackTrace();
         }
         return itemNames;
@@ -69,6 +79,8 @@ public class DatabaseConnection {
 
     /**
      * Read order details from the server, store orders as list of order objects.
+     *
+     * @param date date of the flight
      * @return a list of order objects
      */
     public ArrayList<Order> readOrders(String date) {
@@ -80,6 +92,7 @@ public class DatabaseConnection {
             psCourseQuery.setString(1, date);
             ResultSet rs = psCourseQuery.executeQuery();
             while (rs.next()) {
+                // read each order and store into orderList
                 String orderNo = rs.getString("orderNo");
                 String customer = rs.getString("customer");
                 String deliverTo = rs.getString("deliverTo");
@@ -88,7 +101,7 @@ public class DatabaseConnection {
                 orderList.add(order);
             }
         } catch (SQLException e) {
-            System.out.println("Error: Failed to retrieve orders from data base.");
+            System.err.println("Error: Failed to retrieve orders from data base.");
             e.printStackTrace();
         }
         return orderList;
@@ -103,6 +116,7 @@ public class DatabaseConnection {
             DatabaseMetaData databaseMetadata = this.conn.getMetaData();
             ResultSet resultSet =
                     databaseMetadata.getTables(null, null, "FLIGHTPATH", null);
+            // delete the table if it exists already.
             if (resultSet.next()) {
                 this.statement.execute("drop table flightpath");
             }
@@ -121,14 +135,18 @@ public class DatabaseConnection {
     }
 
     /**
+     * write flight path into the database
      *
+     * @param paths paths of the flight
      */
     public void writePaths(List<Path> paths) {
+        // create empty table first
         createTable();
         try {
             PreparedStatement psPath = conn.prepareStatement(
                     "insert into flightpath values (?, ?, ?, ?, ?, ?)"
             );
+            // write each path
             for (Path path : paths) {
                 psPath.setString(1, path.orderNo);
                 psPath.setDouble(2, path.fromLongitude);

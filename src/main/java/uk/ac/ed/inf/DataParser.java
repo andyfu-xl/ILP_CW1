@@ -10,16 +10,28 @@ import com.mapbox.geojson.Polygon;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+/**
+ * Parsing data of orders in Json file,
+ * and data of map details in Geojson file.
+ */
 public class DataParser {
-
+    // server that the class read data from.
     private HttpConnection server;
 
+    /**
+     * Constructor of DataParser
+     *
+     * @param name name (IP) of the server.
+     * @param port port number the class will connect with.
+     */
     public DataParser(String name, String port) {
         this.server = new HttpConnection(name, port);
     }
 
     /**
-     * Read menus file from the server, store menus as list of shops.
+     * Read menus file from the server, store menus as ArrayList of shops.
+     *
+     * @return List of shops which stores menu details.
      */
     public ArrayList<Shop> readMenus() {
         server.connectHttp(Const.PATH_MENUS);
@@ -32,6 +44,12 @@ public class DataParser {
     /**
      * Read no-fly-zones file from the server, store no-fly-zone as list of polygons.
      */
+
+    /**
+     * Read no-fly-zones file from the server, store no-fly-zones as ArrayList of polygons.
+     *
+     * @return Each polygon in the ArrayList representing a building (no-fly-zone).
+     */
     public ArrayList<Polygon> readNoFlyZones() {
         server.connectHttp(Const.PATH_NO_FLY_ZONES);
         FeatureCollection featureCollection = FeatureCollection.fromJson(server.getJson());
@@ -43,8 +61,12 @@ public class DataParser {
     }
 
     /**
-     * Read landmarks file from the server, store landmarks as list of points.
+     * Read landmarks file from the server, store landmarks as ArrayList of points.
+     * Landmarks is never used in my algorithm
+     *
+     * @return landmarks in an ArrayList.
      */
+    // TODO: 2021/11/28  delete it.
     public ArrayList<Point> readLandmarks() {
         server.connectHttp(Const.PATH_LANDMARKS);
         FeatureCollection featureCollection = FeatureCollection.fromJson(server.getJson());
@@ -55,6 +77,14 @@ public class DataParser {
         return landmarks;
     }
 
+    /**
+     * Parse coordinates of the center of deliverTo,
+     * from a string of whatThreeWords address in json format.
+     *
+     * @param json string of whatThreeWords address in json format
+     *             , we only need the coordinate of the center
+     * @return center coordinate of the address in a LongLat object.
+     */
     public LongLat parseCoordinate (String json) {
         json = json.split("},\n  \"words")[0];
         json = json.split("coordinates\": \\{")[1];
@@ -69,10 +99,11 @@ public class DataParser {
 
     /**
      * Converting WhatThreeWords addresses into coordinates.
+     *
      * @param whatThreeWords WhatThreeWords, three words in one String, each word is
-     *              separated with "." from others.
+     *           separated with "." from others.
+     * @return Coordinate of the center of address represented by whatThreeWords
      */
-    // TODO: 2021/10/26  catch this exception when calling this function.
     public LongLat wordsToLongLat(String whatThreeWords) {
         String[] words = whatThreeWords.split("\\.");
         if (words.length != 3) {
