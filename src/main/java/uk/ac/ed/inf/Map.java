@@ -64,6 +64,7 @@ public class Map {
     public Map(LongLat dronePosition, ArrayList<Polygon> noFlyZones) {
         this.dronePosition = dronePosition;
         this.noFlyZones = noFlyZones;
+        initializePaths();
     }
 
     // getters
@@ -73,44 +74,7 @@ public class Map {
     public List<Point> getFlightLineBack() { return flightLineBack; }
     public ArrayList<Polygon> getNoFlyZones() { return noFlyZones; }
 
-    /**
-     * Generate the path back to the Appleton Tower given an ArrayList of turningPoints
-     * The flights will fly roughly straight unless it passes a turningPoint
-     *
-     * @param turningPoints position where the drone is about to turn
-     * @return number of move of the path
-     */
-    public int turningPointsToPathBack(ArrayList<LongLat> turningPoints) {
-        int moveNumber = 0;
-        if (turningPoints.size() <= 1) {
-            return moveNumber;
-        }
-        LongLat initialPos = turningPoints.get(0);
-        flightPathBack = new ArrayList<>();
-        flightLineBack = new ArrayList<>();
-        for (int i = 1; i < turningPoints.size(); i++) {
-            LongLat target = turningPoints.get(i);
-            Node n = straightRoute(initialPos, target);
-            initialPos = n.position;
-            ArrayList<Path> tempPath = new ArrayList<>();
-            ArrayList<Point> tempLine = new ArrayList<>();
-            while (n.parent != null) {
-                Path path = new Path("0", n.position.longitude,
-                        n.position.latitude, n.angle, n.parent.position.longitude,
-                        n.parent.position.latitude);
-                moveNumber++;
-                tempPath.add(path);
-                tempLine.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
-                n = n.parent;
-            }
-            Collections.reverse(tempLine);
-            Collections.reverse(tempPath);
-            this.flightPathBack.addAll(tempPath);
-            this.flightLineBack.addAll(tempLine);
-        }
-        return moveNumber;
-    }
-
+    // initialize variables for storing the flight path.
     public void initializePaths() {
         flightPath = new ArrayList<>();
         flightLine = new ArrayList<>();
@@ -123,13 +87,10 @@ public class Map {
      * The flights will fly roughly straight unless it passes a turningPoint
      *
      * @param turningPoints position where the drone is about to turn
-     * @return number of move of the path
-     *
-     * @param turningPoints position where the drone is about to turn
      * @param orderNumber order number which will be written into the database
      * @return number of move of the path
      */
-    public int turningPointsToPathOrder(ArrayList<LongLat> turningPoints, String orderNumber) {
+    public int turningPointsToPath(ArrayList<LongLat> turningPoints, String orderNumber, Boolean back) {
         int moveNumber = 0;
         if (turningPoints.size() <= 1) {
             return moveNumber;
@@ -152,28 +113,39 @@ public class Map {
                 this.flightLine.add(point);
                 continue;
             }
+            /*
+              <n> is a linked list of positions, the head is close to the target (turning point)
+              the linked list is the path from initialPos to target, <n>'s parent is closer to
+              initialPos, the drone will move from its parent to it.
+             */
             Node n = straightRoute(initialPos, target);
+            /*
+              the drone will be at n's position before it travels to the next target (turning point).
+             */
             initialPos = n.position;
-            ArrayList<Path> tempPath = new ArrayList<>();
-            ArrayList<Point> tempLine = new ArrayList<>();
+            // The linked list is in reserved order of the flight, so I flip it
+            ArrayList<Path> reversedPaths = new ArrayList<>();
+            ArrayList<Point> reversedPoints = new ArrayList<>();
             while (n.parent != null) {
                 Path path = new Path(orderNumber, n.parent.position.longitude,
                         n.parent.position.latitude, n.angle, n.position.longitude,
                         n.position.latitude);
                 moveNumber++;
-                tempPath.add(path);
-                tempLine.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
+                reversedPaths.add(path);
+                reversedPoints.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
                 n = n.parent;
             }
-            Collections.reverse(tempLine);
-            Collections.reverse(tempPath);
-            if (orderNumber.equals("0")) {
-                this.flightPathBack.addAll(tempPath);
-                this.flightLineBack.addAll(tempLine);
+            Collections.reverse(reversedPoints);
+            Collections.reverse(reversedPaths);
+            // The drone fly back to the appleton tower
+            if (back) {
+                this.flightPathBack.addAll(reversedPaths);
+                this.flightLineBack.addAll(reversedPoints);
             }
+            // The drone deliver an order
             else {
-                this.flightPath.addAll(tempPath);
-                this.flightLine.addAll(tempLine);
+                this.flightPath.addAll(reversedPaths);
+                this.flightLine.addAll(reversedPoints);
             }
         }
         return moveNumber;
@@ -210,6 +182,12 @@ public class Map {
                 line.setLine(x1, y1, x2, y2);
                 if (pseudoLandmarks) {
                     int coincideBetweenTwoLines = 0;
+                    /*
+                        As we treating points of no-fly-zones as pseudo-landmarks
+                        There are four ways of cutting an corner of the no-fly-zones,
+                        the move starts form one ends of an edge of no-fly-zones,
+                        or the move ends at one ends of an edge of no-fly-zones.
+                     */
                     if (x1 == currentPosition.longitude & y1 == currentPosition.latitude) {
                         coincideBetweenTwoLines++;
                     }
@@ -222,39 +200,67 @@ public class Map {
                     if (x2 == nextPosition.longitude & y2 == nextPosition.latitude) {
                         coincideBetweenTwoLines++;
                     }
+                    /*
+                        If a move starts from one end of the edge, ends at another end of the edge,
+                        there will be two coincides, the move will be legal.
+                     */
                     if (coincideBetweenTwoLines == 2) {
                         return true;
                     } else if (coincideBetweenTwoLines == 1) {
+                        // the move passes one corner of the no-fly-zone
                         cornerIntersect++;
                         continue;
                     } else if (coincideBetweenTwoLines > 2) {
+                        // the move is illegal as the drone entered no-fly-zones
                         System.out.println(coincideBetweenTwoLines + " coincide between 4 points.");
                         return false;
                     }
                 }
+                /*
+                    if the move intersects with one edge at anywhere other than edge's end,
+                    the move is illegal.
+                 */
                 if (line.intersectsLine(move)) {
                     return false;
                 }
             }
         }
+        /*
+            if the move intersects with more than one edges, and the move is not parallel
+            with any intersected edge, the move is illegal.
+         */
         if (pseudoLandmarks & cornerIntersect > 2) {
             return false;
         }
         return true;
     }
 
+    /**
+     * Apply A* search finding the optimal route to destination,
+     * assuming the drone only turn at the nodes of no-fly-zones, and it can
+     * fly in any direction.
+     *
+     * @param start       the initial position of the route
+     * @param destination the destination where the route ends
+     * @return the turning points to the destination
+     */
     public Node turningPoints(LongLat start, LongLat destination) {
+        // the heuristic is the straight distance to the destination (ignoring no-fly-zones)
         double heuristic = start.distanceTo(destination);
+        // initial state
         Node current = new Node(0, heuristic, start, -1);
         ArrayList<String> explored = new ArrayList<>();
+        // The algorithm do not reconsider any points, for lower complexity
         explored.add(current.position.longitude + "," + current.position.latitude);
         ArrayList<Node> fronts = new ArrayList<>();
         while (true) {
+            // termination condition, the destination is reached
             if (isValidMove(current.position, destination, true)) {
                 Node n = new Node(0, 0, destination, 0);
                 n.parent = current;
                 return n;
             }
+            // A-star search, record unvisited expanded nodes (fronts)
             for (Polygon p : noFlyZones) {
                 List<Point> building = p.coordinates().get(0);
                 for (int i = 0; i < building.size(); i++) {
@@ -262,6 +268,10 @@ public class Map {
                     double lat = building.get(i).latitude();
                     LongLat pointOnBuilding = new LongLat(lng, lat);
                     String pointToString = lng + "," + lat;
+                    /*
+                      the drone is allowed to cut the edge of no-fly-zone for simplicity,
+                      an unvisited node will not be recorded if the drone goes inside no-fly-zones.
+                     */
                     if (!isValidMove(current.position, pointOnBuilding, true) |
                             explored.contains(pointToString)) {
                         continue;
@@ -274,9 +284,11 @@ public class Map {
                     fronts.add(front);
                 }
             }
+            // if the there is no way to go next, the algorithm failed to find a path
             if (fronts.size() == 0) {
                 break;
             }
+            // pick the node with minimum cost+heuristic for next iteration.
             Node nextNode = Collections.min(fronts, new Comparator<Node>() {
                 @Override
                 public int compare(Node o1, Node o2) {
@@ -290,28 +302,38 @@ public class Map {
     }
 
     /**
-     * Apply A* search finding the optimal route to destination, the current position
-     * and destination should be roughly on a straight line that is not cutting through
-     * no-fly-zone, otherwise the time for computation would be too long.
+     * Apply A* search finding the optimal route to destination,
+     * the current positionc and destination should be roughly on a straight line
+     * that won't cutting through no-fly-zone
      *
      * @param start       the initial position of the route
      * @param destination the destination where the route ends
      * @return the optimal route from current state to the destination
      */
     public Node straightRoute(LongLat start, LongLat destination) {
+        // the heuristic is the straight distance to the destination (ignoring no-fly-zones)
         double heuristic = start.distanceTo(destination);
+        // initial state
         Node current = new Node(0, heuristic, start, -1);
         ArrayList<String> explored = new ArrayList<>();
+        // The algorithm do not reconsider any points, for lower complexity
         explored.add(current.position.longitude + "," + current.position.latitude);
         ArrayList<Node> fronts = new ArrayList<>();
         while (true) {
+            // termination condition, the destination is reached
             if (current.position.closeTo(destination)) {
                 return current;
             }
+            /*
+               Since we are searching for path with no big change of direction,
+               We assume the drone will often move towards the target, so we cut
+               half of directions to speed up the algorithm.
+             */
             double latDiff = destination.latitude - current.position.latitude;
             double lngDiff = destination.longitude - current.position.longitude;
             int direction = (int) (Math.toDegrees(Math.atan2(latDiff, lngDiff)) / 10) * 10;
             ArrayList<Node> frontsFromPoint = new ArrayList<>();
+            // A-star search, record unvisited expanded nodes (fronts)
             for (int i = -90; i <= 100; i += 10) {
                 direction = (direction + i + 360) % 360;
                 LongLat nextPosition = current.position.nextPosition(direction);
@@ -326,6 +348,7 @@ public class Map {
                 frontsFromPoint.add(front);
             }
             fronts.addAll(frontsFromPoint);
+            // in case the drone reaches a dead end, the algorithm will consider the route going backwards.
             if (frontsFromPoint.size() == 0) {
                 for (int i = 0; i < 360; i += 10) {
                     LongLat nextPosition = current.position.nextPosition(i);
@@ -340,9 +363,11 @@ public class Map {
                     fronts.add(front);
                 }
             }
+            // if the there is no way to go next, the algorithm failed to find a path
             if (fronts.size() == 0) {
                 break;
             }
+            // pick the node with minimum cost+heuristic for next iteration.
             Node nextNode = Collections.min(fronts, new Comparator<Node>() {
                 @Override
                 public int compare(Node o1, Node o2) {

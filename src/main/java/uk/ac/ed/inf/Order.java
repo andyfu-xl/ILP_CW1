@@ -12,7 +12,16 @@ public class Order {
     private ArrayList<String> shopAddress;
     private ArrayList<LongLat> shopCoordinate;
     private double utility;
-    
+
+    /**
+     * Constructor of Order class
+     *
+     * @param orderNo order number
+     * @param deliveryDate delivery date
+     * @param customer name of customer
+     * @param deliverTo whatThreeWords address, where the drone deliver food to the customer
+     * @param items food items
+     */
     public Order(String orderNo, String deliveryDate, String customer,
                  String deliverTo, ArrayList<String> items) {
         this.orderNo = orderNo;

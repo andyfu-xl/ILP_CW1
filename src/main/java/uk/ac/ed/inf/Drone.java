@@ -99,18 +99,21 @@ public class Drone {
      */
     public boolean backAPT(LongLat pos) {
         LongLat apt = new LongLat(Const.APT_LONG, Const.APT_LAT);
+        // the drone is already close to the Appleton Tower
         if (pos.closeTo(apt) & battery >= 0) {
             return true;
         }
-        Map.Node routeBack = map.turningPoints(pos, apt);
-        ArrayList<LongLat> pathFrame = new ArrayList<>();
-        while (routeBack.parent != null) {
-            pathFrame.add(routeBack.position);
-            routeBack = routeBack.parent;
+        // convert linked list to arrayList
+        Map.Node turningPointsLinked = map.turningPoints(pos, apt);
+        ArrayList<LongLat> turningPointsList = new ArrayList<>();
+        while (turningPointsLinked.parent != null) {
+            turningPointsList.add(turningPointsLinked.position);
+            turningPointsLinked = turningPointsLinked.parent;
         }
-        pathFrame.add(routeBack.position);
-        Collections.reverse(pathFrame);
-        int moveNumber = map.turningPointsToPathOrder(pathFrame, "0");
+        turningPointsList.add(turningPointsLinked.position);
+        Collections.reverse(turningPointsList);
+        // no order to deliver, the orderNumber is set to 0.
+        int moveNumber = map.turningPointsToPath(turningPointsList, "0", true);
         batteryBack = moveNumber;
         if (battery >= moveNumber) {
             return true;
@@ -118,53 +121,65 @@ public class Drone {
         return false;
     }
 
-
+    /**
+     * Compute path for delivering the current order, store the path in map
+     *
+     * @return ture if the drone has enough power going back to the Appleton tower
+     *          after the current order is deliver, otherwise the order will not be delivered.
+     */
     public boolean pathForOrder() {
         LongLat initialPosition = map.dronePosition;
         LongLat deliverTo = parser.wordsToLongLat(currentOrder.getDeliverTo());
         // angle of the first node are set to -1 as there is no last move
-        ArrayList<Map.Node> allRoutes = new ArrayList<>();
-        Map.Node routeToNext;
+        ArrayList<Map.Node> allTurningPoint = new ArrayList<>();
+        Map.Node turningPoints;
         try {
+            // for each shop (there can be 2 shops)
             for (LongLat loc : currentOrder.getShopCoordinate()) {
-                routeToNext = map.turningPoints(map.dronePosition, loc);
-                allRoutes.add(routeToNext);
-                map.dronePosition = routeToNext.position;
+                // record turning points for each shop.
+                turningPoints = map.turningPoints(map.dronePosition, loc);
+                allTurningPoint.add(turningPoints);
+                map.dronePosition = turningPoints.position;
             }
-            routeToNext = map.turningPoints(map.dronePosition, deliverTo);
-            allRoutes.add(routeToNext);
-            map.dronePosition = routeToNext.position;
+            // record turning points for deliver the food
+            turningPoints = map.turningPoints(map.dronePosition, deliverTo);
+            allTurningPoint.add(turningPoints);
+            map.dronePosition = turningPoints.position;
         } catch (Exception e) {
             e.printStackTrace();
             map.dronePosition = initialPosition;
             return false;
         }
-        if (allRoutes == null) {
+        // Error, they should not be reached if the program runs as expected.
+        if (allTurningPoint == null) {
             map.dronePosition = initialPosition;
             return false;
         }
-        for (Map.Node n : allRoutes) {
+        for (Map.Node n : allTurningPoint) {
             if (n == null) {
                 map.dronePosition = initialPosition;
                 return false;
             }
         }
-        ArrayList<LongLat> pathFrame = new ArrayList<>();
-        int moveNumber = 0;
-        for (Map.Node n : allRoutes) {
-            ArrayList<LongLat> tempPoints = new ArrayList<>();
+
+        // convert linked list to array list
+        ArrayList<LongLat> turningPointsList = new ArrayList<>();
+        int moveNumber;
+        for (Map.Node n : allTurningPoint) {
+            ArrayList<LongLat> reversedPoints = new ArrayList<>();
             while (n.parent != null) {
-                tempPoints.add(n.position);
+                reversedPoints.add(n.position);
                 n = n.parent;
             }
-            tempPoints.add(n.position);
-            Collections.reverse(tempPoints);
-            pathFrame.addAll(tempPoints);
+            reversedPoints.add(n.position);
+            Collections.reverse(reversedPoints);
+            turningPointsList.addAll(reversedPoints);
         }
-        moveNumber = map.turningPointsToPathOrder(pathFrame, currentOrder.getOrderNo());
+        moveNumber = map.turningPointsToPath(turningPointsList, currentOrder.getOrderNo(), false);
+        // subtract the battery before letting the drone back to the appleton tower
         battery -= moveNumber;
-        System.out.println("[" + map.dronePosition.longitude + "," + map.dronePosition.latitude + "],");
         if (!backAPT(map.dronePosition)) {
+            // reset the drone status to before delivering this order.
             map.dronePosition = initialPosition;
             battery += moveNumber;
             return false;

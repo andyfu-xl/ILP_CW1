@@ -76,7 +76,7 @@ public class DatabaseTest {
     }
 
     @Test
-    public void andy() {
+    public void aaa() {
         DatabaseConnection database = new DatabaseConnection("localhost", "9876");
         DataParser parser = new DataParser("localhost", "9898");
         Drone drone = new Drone("2023-10-17", parser, database);

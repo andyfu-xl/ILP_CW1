@@ -4,7 +4,6 @@ package uk.ac.ed.inf;
  * representation of a point, by its longitude and latitude.
  */
 public class LongLat {
-
     public Double longitude;
     public Double latitude;
 
