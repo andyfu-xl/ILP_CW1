@@ -9,8 +9,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * The class process path-finding algorithm
+ */
 public class Map {
 
+    // variables
     public LongLat dronePosition;
     private ArrayList<Path> flightPath;
     private List<Point> flightLine;
@@ -18,7 +22,12 @@ public class Map {
     private List<Point> flightLineBack;
     private ArrayList<Polygon> noFlyZones;
 
+    /**
+     * A linked node stores a set of points in sequence.
+     * The node is mainly used for the A-star searching algorithm.
+     */
     public static class Node {
+        // variables
         double cost;
         double moved;
         double heuristic;
@@ -26,6 +35,16 @@ public class Map {
         Node parent;
         int angle;
 
+        /**
+         * constructor of the node
+         *
+         * @param moved the cost takes to reach the current state, from the beginning position
+         *              of the A-star searching algorithm
+         * @param heuristic the estimated cost form current state to the destination of the A-star
+         *                  searching algorithm.
+         * @param position coordinates of the current node
+         * @param angle angle of last move to reach current state.
+         */
         public Node(double moved, double heuristic, LongLat position, int angle) {
             this.cost = moved + heuristic;
             this.moved = moved;
@@ -36,49 +55,43 @@ public class Map {
         }
     }
 
+    /**
+     * Constructor of the map
+     *
+     * @param dronePosition position of the drone
+     * @param noFlyZones buildings that drones cannot fly through
+     */
     public Map(LongLat dronePosition, ArrayList<Polygon> noFlyZones) {
         this.dronePosition = dronePosition;
         this.noFlyZones = noFlyZones;
     }
 
-    public ArrayList<Path> getFlightPath() {
-        return flightPath;
-    }
+    // getters
+    public ArrayList<Path> getFlightPath() { return flightPath; }
+    public List<Point> getFlightLine() { return flightLine; }
+    public ArrayList<Path> getFlightPathBack() { return flightPathBack; }
+    public List<Point> getFlightLineBack() { return flightLineBack; }
+    public ArrayList<Polygon> getNoFlyZones() { return noFlyZones; }
 
-    public List<Point> getFlightLine() {
-        return flightLine;
-    }
-
-    public ArrayList<Path> getFlightPathBack() {
-        return flightPathBack;
-    }
-
-    public List<Point> getFlightLineBack() {
-        return flightLineBack;
-    }
-
-    public ArrayList<Polygon> getNoFlyZones() {
-        return noFlyZones;
-    }
-
-    public int pathBackFromFrame(ArrayList<Point> frame) {
+    /**
+     * Generate the path back to the Appleton Tower given an ArrayList of turningPoints
+     * The flights will fly roughly straight unless it passes a turningPoint
+     *
+     * @param turningPoints position where the drone is about to turn
+     * @return number of move of the path
+     */
+    public int turningPointsToPathBack(ArrayList<LongLat> turningPoints) {
         int moveNumber = 0;
-        if (frame.size() <= 1) {
-            System.out.println("ttttttttttttttttt");
+        if (turningPoints.size() <= 1) {
             return moveNumber;
         }
-        LongLat initialPos = new LongLat(frame.get(0).longitude(), frame.get(0).latitude());
+        LongLat initialPos = turningPoints.get(0);
         flightPathBack = new ArrayList<>();
         flightLineBack = new ArrayList<>();
-        for (int i = 1; i < frame.size(); i++) {
-            LongLat target = new LongLat(frame.get(i).longitude(), frame.get(i).latitude());
-            double heuristic = target.distanceTo(initialPos);
-//            System.out.println("called aStarSearchHelper");
-//            System.out.println(current.position.longitude + "," + current.position.latitude);
-//            System.out.println(target.longitude + "," + target.latitude);
-            Node n = aStarSearchHelper(initialPos, target);
+        for (int i = 1; i < turningPoints.size(); i++) {
+            LongLat target = turningPoints.get(i);
+            Node n = straightRoute(initialPos, target);
             initialPos = n.position;
-            //System.out.println("["+initialPos.longitude + "," + initialPos.latitude + "],");
             ArrayList<Path> tempPath = new ArrayList<>();
             ArrayList<Point> tempLine = new ArrayList<>();
             while (n.parent != null) {
@@ -98,21 +111,39 @@ public class Map {
         return moveNumber;
     }
 
-    public int pathFromFrame(ArrayList<Point> frame, Order currentOrder) {
-        int moveNumber = 0;
-        if (frame.size() <= 1) {
-            return moveNumber;
-        }
-        LongLat initialPos = new LongLat(frame.get(0).longitude(), frame.get(0).latitude());
+    public void initializePaths() {
         flightPath = new ArrayList<>();
         flightLine = new ArrayList<>();
-        for (int i = 1; i < frame.size(); i++) {
-            LongLat target = new LongLat(frame.get(i).longitude(), frame.get(i).latitude());
-//            System.out.println(frame.get(i).longitude() + ",,,,," + frame.get(i).latitude());
-            if ((target.latitude == frame.get(i - 1).latitude()) &
-                    (target.longitude == frame.get(i - 1).longitude())) {
+        flightPathBack = new ArrayList<>();
+        flightLineBack = new ArrayList<>();
+    }
+
+    /**
+     * Generate the path given an ArrayList of turningPoints
+     * The flights will fly roughly straight unless it passes a turningPoint
+     *
+     * @param turningPoints position where the drone is about to turn
+     * @return number of move of the path
+     *
+     * @param turningPoints position where the drone is about to turn
+     * @param orderNumber order number which will be written into the database
+     * @return number of move of the path
+     */
+    public int turningPointsToPathOrder(ArrayList<LongLat> turningPoints, String orderNumber) {
+        int moveNumber = 0;
+        if (turningPoints.size() <= 1) {
+            return moveNumber;
+        }
+        LongLat initialPos = turningPoints.get(0);
+        initializePaths();
+
+        for (int i = 1; i < turningPoints.size(); i++) {
+            LongLat target = turningPoints.get(i);
+            // if the target location is the same as current location, the drone hovers
+            if ((target.latitude == turningPoints.get(i - 1).latitude) &
+                    (target.longitude == turningPoints.get(i - 1).longitude)) {
                 Path previousPath = this.flightPath.get(this.flightPath.size() - 1);
-                Path path = new Path(currentOrder.getOrderNo(), previousPath.toLongitude,
+                Path path = new Path(orderNumber, previousPath.toLongitude,
                         previousPath.toLatitude, -999, previousPath.toLongitude,
                         previousPath.toLatitude);
                 Point point = this.flightLine.get(this.flightLine.size() - 1);
@@ -121,17 +152,12 @@ public class Map {
                 this.flightLine.add(point);
                 continue;
             }
-
-//            System.out.println("called aStarSearchHelper");
-//            System.out.println(current.position.longitude + "," + current.position.latitude);
-//            System.out.println(target.longitude + "," + target.latitude);
-            Node n = aStarSearchHelper(initialPos, target);
+            Node n = straightRoute(initialPos, target);
             initialPos = n.position;
-            //System.out.println("["+initialPos.longitude + "," + initialPos.latitude + "],");
             ArrayList<Path> tempPath = new ArrayList<>();
             ArrayList<Point> tempLine = new ArrayList<>();
             while (n.parent != null) {
-                Path path = new Path(currentOrder.getOrderNo(), n.parent.position.longitude,
+                Path path = new Path(orderNumber, n.parent.position.longitude,
                         n.parent.position.latitude, n.angle, n.position.longitude,
                         n.position.latitude);
                 moveNumber++;
@@ -141,8 +167,14 @@ public class Map {
             }
             Collections.reverse(tempLine);
             Collections.reverse(tempPath);
-            this.flightPath.addAll(tempPath);
-            this.flightLine.addAll(tempLine);
+            if (orderNumber.equals("0")) {
+                this.flightPathBack.addAll(tempPath);
+                this.flightLineBack.addAll(tempLine);
+            }
+            else {
+                this.flightPath.addAll(tempPath);
+                this.flightLine.addAll(tempLine);
+            }
         }
         return moveNumber;
     }
@@ -153,12 +185,13 @@ public class Map {
      *
      * @param currentPosition the current position which the drone will move to.
      * @param nextPosition    the next position which the drone will move to.
-     * @param buildingNodes   is true if one move can start or end with one node on any building
+     * @param pseudoLandmarks whether we treat points of buildings as pseudo-landmarks.
+     *                        true if one move can start or end with one node on any building
      *                        without passing through the building. This is set to true when
      *                        searching for the frame of the shortest path.
      * @return whether the move is valid.
      */
-    public boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean buildingNodes) {
+    public boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean pseudoLandmarks) {
         if (!dronePosition.isConfined() | !nextPosition.isConfined()) {
             return false;
         }
@@ -175,7 +208,7 @@ public class Map {
                 double y2 = building.get(i + 1).latitude();
                 Line2D line = new Line2D.Double();
                 line.setLine(x1, y1, x2, y2);
-                if (buildingNodes) {
+                if (pseudoLandmarks) {
                     int coincideBetweenTwoLines = 0;
                     if (x1 == currentPosition.longitude & y1 == currentPosition.latitude) {
                         coincideBetweenTwoLines++;
@@ -204,13 +237,13 @@ public class Map {
                 }
             }
         }
-        if (buildingNodes & cornerIntersect > 2) {
+        if (pseudoLandmarks & cornerIntersect > 2) {
             return false;
         }
         return true;
     }
 
-    public Node aStarSearch(LongLat start, LongLat destination) {
+    public Node turningPoints(LongLat start, LongLat destination) {
         double heuristic = start.distanceTo(destination);
         Node current = new Node(0, heuristic, start, -1);
         ArrayList<String> explored = new ArrayList<>();
@@ -265,7 +298,7 @@ public class Map {
      * @param destination the destination where the route ends
      * @return the optimal route from current state to the destination
      */
-    public Node aStarSearchHelper(LongLat start, LongLat destination) {
+    public Node straightRoute(LongLat start, LongLat destination) {
         double heuristic = start.distanceTo(destination);
         Node current = new Node(0, heuristic, start, -1);
         ArrayList<String> explored = new ArrayList<>();
@@ -275,7 +308,6 @@ public class Map {
             if (current.position.closeTo(destination)) {
                 return current;
             }
-            // TODO: 2021/10/29 only 180 degrees required
             double latDiff = destination.latitude - current.position.latitude;
             double lngDiff = destination.longitude - current.position.longitude;
             int direction = (int) (Math.toDegrees(Math.atan2(latDiff, lngDiff)) / 10) * 10;
@@ -318,8 +350,6 @@ public class Map {
                 }
             });
             fronts.remove(nextNode);
-            //System.out.println(nextNode.moved);
-            //System.out.println("[" + nextNode.position.longitude + "," + nextNode.position.latitude + "],");
             current = nextNode;
         }
         return null;

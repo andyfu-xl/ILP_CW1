@@ -1,7 +1,5 @@
 package uk.ac.ed.inf;
 
-import java.awt.geom.Line2D;
-import java.beans.beancontext.BeanContextChild;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,15 +102,15 @@ public class Drone {
         if (pos.closeTo(apt) & battery >= 0) {
             return true;
         }
-        Map.Node routeBack = map.aStarSearch(pos, apt);
-        ArrayList<Point> pathFrame = new ArrayList<>();
+        Map.Node routeBack = map.turningPoints(pos, apt);
+        ArrayList<LongLat> pathFrame = new ArrayList<>();
         while (routeBack.parent != null) {
-            pathFrame.add(Point.fromLngLat(routeBack.position.longitude, routeBack.position.latitude));
+            pathFrame.add(routeBack.position);
             routeBack = routeBack.parent;
         }
-        pathFrame.add(Point.fromLngLat(routeBack.position.longitude, routeBack.position.latitude));
+        pathFrame.add(routeBack.position);
         Collections.reverse(pathFrame);
-        int moveNumber = map.pathBackFromFrame(pathFrame);
+        int moveNumber = map.turningPointsToPathOrder(pathFrame, "0");
         batteryBack = moveNumber;
         if (battery >= moveNumber) {
             return true;
@@ -129,22 +127,12 @@ public class Drone {
         Map.Node routeToNext;
         try {
             for (LongLat loc : currentOrder.getShopCoordinate()) {
-                routeToNext = map.aStarSearch(map.dronePosition, loc);
+                routeToNext = map.turningPoints(map.dronePosition, loc);
                 allRoutes.add(routeToNext);
-//                Map.Node hoveringStep = new Map.Node(0, 0, loc, -999);
-//                allRoutes.add(hoveringStep);
                 map.dronePosition = routeToNext.position;
-                //System.out.println("HHHHHHHHHHHHHH");
             }
-            //System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAA");
-            //System.out.println(initialState.position.longitude + "," + initialState.position.latitude);
-            //System.out.println(deliverTo.longitude + "," + deliverTo.latitude);
-            //goTo = aStarSearch(initialState, deliverTo);
-            routeToNext = map.aStarSearch(map.dronePosition, deliverTo);
+            routeToNext = map.turningPoints(map.dronePosition, deliverTo);
             allRoutes.add(routeToNext);
-//            Map.Node hoveringStep = new Map.Node(0, 0, deliverTo, -999);
-//            allRoutes.add(hoveringStep);
-            //System.out.println("goTo is NUll: " + (goTo == null));
             map.dronePosition = routeToNext.position;
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,35 +149,19 @@ public class Drone {
                 return false;
             }
         }
-//        flightPath = new ArrayList<>();
-        ArrayList<Point> pathFrame = new ArrayList<>();
+        ArrayList<LongLat> pathFrame = new ArrayList<>();
         int moveNumber = 0;
         for (Map.Node n : allRoutes) {
-//            ArrayList<Path> tempPath = new ArrayList<>();
-            ArrayList<Point> tempPoints = new ArrayList<>();
-//            if (n.parent != null) {
-//                tempPoints.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
-//            }
+            ArrayList<LongLat> tempPoints = new ArrayList<>();
             while (n.parent != null) {
-//                Path path = new Path(currentOrder.getOrderNo(), n.position.longitude,
-//                        n.position.latitude, n.angle, n.parent.position.longitude,
-//                        n.parent.position.latitude);
-//                numberOfMoves++;
-//                tempPath.add(path);
-                tempPoints.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
+                tempPoints.add(n.position);
                 n = n.parent;
             }
-            tempPoints.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
+            tempPoints.add(n.position);
             Collections.reverse(tempPoints);
-//            Collections.reverse(tempPath);
             pathFrame.addAll(tempPoints);
-//            flightPath.addAll(tempPath);
         }
-//        System.out.println("hhhhhhhh");
-//        for (Point p : pathFrame) {
-//            System.out.println(p.longitude() + ",,,,," + p.latitude());
-//        }
-        moveNumber = map.pathFromFrame(pathFrame, currentOrder);
+        moveNumber = map.turningPointsToPathOrder(pathFrame, currentOrder.getOrderNo());
         battery -= moveNumber;
         System.out.println("[" + map.dronePosition.longitude + "," + map.dronePosition.latitude + "],");
         if (!backAPT(map.dronePosition)) {
