@@ -64,7 +64,8 @@ public class Map {
     public Map(LongLat dronePosition, ArrayList<Polygon> noFlyZones) {
         this.dronePosition = dronePosition;
         this.noFlyZones = noFlyZones;
-        initializePaths();
+        initializePaths(true);
+        initializePaths(false);
     }
 
     // getters
@@ -74,12 +75,20 @@ public class Map {
     public List<Point> getFlightLineBack() { return flightLineBack; }
     public ArrayList<Polygon> getNoFlyZones() { return noFlyZones; }
 
-    // initialize variables for storing the flight path.
-    public void initializePaths() {
-        flightPath = new ArrayList<>();
-        flightLine = new ArrayList<>();
-        flightPathBack = new ArrayList<>();
-        flightLineBack = new ArrayList<>();
+    /**
+     * initialize variables for storing the flight path.
+     *
+     * @param back where initialize the flight path back to the appleton tower
+     */
+    public void initializePaths(boolean back) {
+        if (back) {
+            flightPathBack = new ArrayList<>();
+            flightLineBack = new ArrayList<>();
+        }
+        else {
+            flightPath = new ArrayList<>();
+            flightLine = new ArrayList<>();
+        }
     }
 
     /**
@@ -96,7 +105,7 @@ public class Map {
             return moveNumber;
         }
         LongLat initialPos = turningPoints.get(0);
-        initializePaths();
+        initializePaths(back);
 
         for (int i = 1; i < turningPoints.size(); i++) {
             LongLat target = turningPoints.get(i);
@@ -234,6 +243,8 @@ public class Map {
         }
         return true;
     }
+
+
 
     /**
      * Apply A* search finding the optimal route to destination,

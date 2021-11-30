@@ -2,6 +2,9 @@ package uk.ac.ed.inf;
 
 import java.util.ArrayList;
 
+/**
+ * Details of orders
+ */
 public class Order {
     private String orderNo;
     private String deliveryDate;
@@ -49,7 +52,7 @@ public class Order {
      * @param parser that can parse data from the server
      * @return estimated number of moves to deliver this order
      */
-    public int estimateMoves(LongLat dronePosition, DataParser parser) {
+    public int estimateMoves(LongLat dronePosition, HttpConnection parser) {
         ArrayList<LongLat> coordinates = new ArrayList<>();
         for (String address : this.shopAddress) {
             // convert WhatThreeWord address into LongLat object.
@@ -95,7 +98,7 @@ public class Order {
      * @param parser that can parse data from the server
      * @return deliveryCost divided by estimated moves
      */
-    public double estimateUtility (LongLat dronePosition, DataParser parser) {
+    public double estimateUtility (LongLat dronePosition, HttpConnection parser) {
         calCostAndGetShops(parser);
         int moves = estimateMoves(dronePosition, parser);
         this.utility = this.cost / moves;
@@ -107,7 +110,7 @@ public class Order {
      *
      * @param parser that can parse data from the server
      */
-    public void calCostAndGetShops(DataParser parser) {
+    public void calCostAndGetShops(HttpConnection parser) {
         int foodCost = 0;
         ArrayList<String> shopLocations = new ArrayList<>();
         int numberOfItems = 0;

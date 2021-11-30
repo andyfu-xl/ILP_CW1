@@ -10,10 +10,6 @@ import java.util.List;
  */
 public class DatabaseConnection {
 
-    /* Just have one HttpClient, use it multiple times. We have one
-       client so it's declared as static, it won't update (final) */
-    private static final HttpClient client = HttpClient.newHttpClient();
-    // private variables
     private String name;
     private String port;
     private Statement statement;

@@ -3,11 +3,8 @@ package uk.ac.ed.inf;
 import com.mapbox.geojson.*;
 import com.mapbox.geojson.Point;
 
-import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,41 +47,20 @@ public class App {
         String year = args[2];
         String date = year + "-" + mm + "-" + dd;
 
-        DataParser parser = new DataParser(Const.IP, portHttp);
+        HttpConnection parser = new HttpConnection(Const.IP, portHttp);
         DatabaseConnection database = new DatabaseConnection(Const.IP, portDatabase);
         // Initialize the drone and map.
         Drone drone = new Drone(date, parser, database);
         drone.map.dronePosition = new LongLat(Const.APT_LONG, Const.APT_LAT);
+        drone.pathForDate();
         // List of points storing the data to be written in the geojson file.
-        List<Point> points = new ArrayList<>();
-        points.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
+        List<Point> outputPoints = drone.getOutputPoints();
         // List of paths storing the data to be written in the database.
-        List<Path> paths = new ArrayList<>();
+        List<Path> outputPaths = drone.getOutputPaths();
 
-        // The path before the drone back to Appleton Tower (before running out battery)
-        while (drone.pathForOrder()) {
-            points.addAll(drone.map.getFlightLine());
-            paths.addAll(drone.map.getFlightPath());
-            if (drone.getOrders().size() == 0) {
-                break;
-            }
-            drone.selectOrderByUtility();
-        }
-        // The drone cannot back to Appleton Tower if it deliver for the next order.
-        // Adding the path of the drone back to Appleton Tower.
-        if (drone.backAPT(drone.map.dronePosition)) {
-            points.addAll(drone.map.getFlightLineBack());
-            paths.addAll(drone.map.getFlightPathBack());
-        }
-        else {
-            // This will never be reached unless there are bugs.
-            System.err.println("Error: The drone cannot back to the APT.");
-            return;
-        }
-        database.writePaths(paths);
-
+        database.writePaths(outputPaths);
         // Convert list of points to FeatureCollection and write into a file.
-        LineString lineString = LineString.fromLngLats(points);
+        LineString lineString = LineString.fromLngLats(outputPoints);
         Feature f = Feature.fromGeometry(lineString);
         FeatureCollection fc = FeatureCollection.fromFeature(f);
         date = dd + "-" + mm + "-" + year;
@@ -92,6 +68,6 @@ public class App {
         System.out.println(fc.toJson());
 
         System.out.println("total number of moves: "
-                + (1500 - drone.getBattery() + drone.getBatteryBack()));
+                + (Const.MAX_POWER - drone.getBattery() + drone.getEnergyBack()));
     }
 }

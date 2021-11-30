@@ -18,12 +18,14 @@ public class Drone {
     private ArrayList<Order> orders;
     private Order currentOrder;
     private String date;
-    private DataParser parser;
+    private HttpConnection parser;
     private DatabaseConnection database;
     public Map map;
-    private ArrayList<Path> flightPathBack;
-    private List<Point> flightLineBack;
-    private int batteryBack;
+    private int energyBack;
+    // List of points storing the data to be written in the geojson file.
+    private List<Point> outputPoints;
+    // List of paths storing the data to be written in the database.
+    private ArrayList<Path> outputPaths;
 
     /**
      * Constructor of the drone.
@@ -32,7 +34,7 @@ public class Drone {
      * @param parser providing data from json and geojson files in the server.
      * @param database providing data from the database in the server.
      */
-    public Drone(String date, DataParser parser, DatabaseConnection database) {
+    public Drone(String date, HttpConnection parser, DatabaseConnection database) {
         this.date = date;
         this.parser = parser;
         this.database = database;
@@ -45,15 +47,12 @@ public class Drone {
     public ArrayList<Order> getOrders() {
         return orders;
     }
-    public Order getCurrentOrder() {
-        return currentOrder;
-    }
     public int getBattery() {
         return battery;
     }
-    public int getBatteryBack() {
-        return batteryBack;
-    }
+    public int getEnergyBack() { return energyBack; }
+    public List<Point> getOutputPoints() { return outputPoints; }
+    public List<Path> getOutputPaths() { return outputPaths; }
 
     /**
      * initialize the drone using information in the server
@@ -114,7 +113,7 @@ public class Drone {
         Collections.reverse(turningPointsList);
         // no order to deliver, the orderNumber is set to 0.
         int moveNumber = map.turningPointsToPath(turningPointsList, "0", true);
-        batteryBack = moveNumber;
+        energyBack = moveNumber;
         if (battery >= moveNumber) {
             return true;
         }
@@ -178,6 +177,7 @@ public class Drone {
         moveNumber = map.turningPointsToPath(turningPointsList, currentOrder.getOrderNo(), false);
         // subtract the battery before letting the drone back to the appleton tower
         battery -= moveNumber;
+
         if (!backAPT(map.dronePosition)) {
             // reset the drone status to before delivering this order.
             map.dronePosition = initialPosition;
@@ -185,5 +185,36 @@ public class Drone {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Compute flight path for the given date.
+     */
+    public void pathForDate() {
+        outputPoints = new ArrayList<>();
+        outputPoints.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
+        outputPaths = new ArrayList<>();
+        // The path before the drone back to Appleton Tower (before running out battery)
+        while (pathForOrder()) {
+            outputPoints.addAll(map.getFlightLine());
+            outputPaths.addAll(map.getFlightPath());
+            if (getOrders().size() == 0) {
+                break;
+            }
+            selectOrderByUtility();
+        }
+        // The drone cannot back to Appleton Tower if it deliver for the next order.
+        // Adding the path of the drone back to Appleton Tower.
+        if (backAPT(map.dronePosition)) {
+            outputPoints.addAll(map.getFlightLineBack());
+            outputPaths.addAll(map.getFlightPathBack());
+        }
+        else {
+            // This will never be reached unless there are bugs.
+            System.err.println("Error: The drone cannot back to the APT.");
+            outputPoints = new ArrayList<>();
+            outputPaths = new ArrayList<>();
+            return;
+        }
     }
 }
