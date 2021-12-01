@@ -65,7 +65,7 @@ public class App {
         FeatureCollection fc = FeatureCollection.fromFeature(f);
         date = dd + "-" + mm + "-" + year;
         writeFile(fc.toJson(), date);
-        System.out.println(fc.toJson());
+        //System.out.println(fc.toJson()); // uncomment for print the json data
 
         System.out.println("total number of moves: "
                 + (Const.MAX_POWER - drone.getBattery() + drone.getEnergyBack()));

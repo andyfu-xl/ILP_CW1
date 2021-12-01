@@ -3,7 +3,6 @@ package uk.ac.ed.inf;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.turf.TurfJoins;
-import com.mapbox.turf.TurfJoins.*;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -181,20 +180,22 @@ public class Map {
      *
      * @param currentPosition the current position which the drone will move to.
      * @param nextPosition    the next position which the drone will move to.
-     * @param strict          assuming no-fly-zones is strictly contained by its edges,
+     * @param strictContains          assuming no-fly-zones is strictly contained by its edges,
      *                        which mean any points one edges is not in no-fly-zones.
      *                        true if one move can start or end on lines of any building
      *                        without passing through the building. It is used for
      *                        searching turning points of the flight
      * @return whether the move is valid.
      */
-    public boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean strict) {
+    public boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean strictContains) {
         if (!dronePosition.isConfined() | !nextPosition.isConfined()) {
             return false;
         }
         // Line2D representing a move
         Line2D move = new Line2D.Double();
-        if (strict) {
+        List<List<Line2D>> flightPathBounds = new ArrayList<>();
+        Boolean[] pathBoundsIntersect = {false, false};
+        if (strictContains) {
             // move both end of the line slightly so they are not on corners of no-fly-zones.
             double lengthOfMove = currentPosition.distanceTo(nextPosition);
             double x1 = currentPosition.longitude + Const.DISTANCE_MOVE * 0.01 *
@@ -206,18 +207,13 @@ public class Map {
             double y2 = nextPosition.latitude + Const.DISTANCE_MOVE * 0.01 *
                     (currentPosition.latitude - nextPosition.latitude) * (1 / lengthOfMove);
             move.setLine(x1, y1, x2, y2);
+            flightPathBounds = flightPathBounds(new LongLat(x1, y1), new LongLat(x2, y2));
         }
         else {
             move.setLine(currentPosition.longitude, currentPosition.latitude,
                     nextPosition.longitude, nextPosition.latitude);
         }
         for (Polygon p : noFlyZones) {
-            // the starts and end of the move should not in any building (no-fly-zones polygon)
-            Point p1 = Point.fromLngLat(move.getX1(), move.getY1());
-            Point p2 = Point.fromLngLat(move.getX2(), move.getY2());
-            if (TurfJoins.inside(p1, p) | TurfJoins.inside(p2, p)) {
-                return false;
-            }
             List<Point> building = p.coordinates().get(0);
             for (int i = 0; i < building.size() - 1; i++) {
                 double x1 = building.get(i).longitude();
@@ -226,14 +222,8 @@ public class Map {
                 double y2 = building.get(i + 1).latitude();
                 Line2D line = new Line2D.Double();
                 line.setLine(x1, y1, x2, y2);
-                /*
-                    if the move intersects with one edge, the move is illegal.
-                 */
-                if (line.intersectsLine(move)) {
-                    return false;
-                }
                 // check if the move is coincide with the edge of no-fly-zones
-                if (strict) {
+                if (strictContains) {
                     Line2D from = new Line2D.Double();
                     from.setLine(currentPosition.longitude, currentPosition.latitude,
                             currentPosition.longitude, currentPosition.latitude);
@@ -244,10 +234,96 @@ public class Map {
                     if (line.intersectsLine(from) & line.intersectsLine(to)) {
                         return true;
                     }
+                    // check whether the drone will pass a very small gap.
+                    for (int j = 0; j < flightPathBounds.size(); j++) {
+                        // check whether one side of the move has obstacle.
+                        for (Line2D bound : flightPathBounds.get(j)) {
+                            if (line.intersectsLine(bound)) {
+                                pathBoundsIntersect[j] = true;
+                            }
+                        }
+                    }
+                }
+                /*
+                    if the move intersects with one edge, the move is illegal.
+                 */
+                if (line.intersectsLine(move)) {
+                    return false;
                 }
             }
+            // the starts and end of the move should not in any building (no-fly-zones polygon)
+            Point p1 = Point.fromLngLat(move.getX1(), move.getY1());
+            Point p2 = Point.fromLngLat(move.getX2(), move.getY2());
+            if (TurfJoins.inside(p1, p) | TurfJoins.inside(p2, p)) {
+                return false;
+            }
+        }
+        // both side of the move has obstacles, the drone will passes a small gap.
+        if (pathBoundsIntersect[0] & pathBoundsIntersect[1]) {
+            // the drone is not able to pass small gaps, return false.
+            return false;
         }
         return true;
+    }
+
+    /**
+     * This function is required for estimate flight path boundaries, given the drone
+     * cannot fly straightly, as it can only choose angle with multiple of 10 degrees.
+     * Using this function will avoid the drone stuck in very small gaps.
+     *
+     * @param currentPosition current position of the drone
+     * @param nextPosition the target position
+     * @return two possible flight bounds, the drone can fly inside one of them.
+     */
+    public List<List<Line2D>> flightPathBounds(LongLat currentPosition, LongLat nextPosition) {
+        double direction = currentPosition.directionTo(nextPosition);
+        double reverseDirection = nextPosition.directionTo(currentPosition);
+        // these two points, currentPosition and nextPosition defines one bounded bounded region.
+        LongLat anticlockwise1 = currentPosition.nextPosition((direction + 10 + 360) % 360);
+        LongLat anticlockwise2 = nextPosition.nextPosition((reverseDirection - 10 + 360) % 360);
+        // the bounded area that drone travel to nextPosition by firstly pick an angle which
+        // is multiple of 10 degrees anticlockwise. If direction is 4, the drone's first move
+        // has angle 10 degree.
+        List<Line2D> startsAnticlockwise = new ArrayList<>();
+        Line2D line1 = new Line2D.Double();
+        line1.setLine(currentPosition.longitude, currentPosition.latitude,
+                anticlockwise1.longitude, anticlockwise1.latitude);
+        startsAnticlockwise.add(line1);
+        Line2D line2 = new Line2D.Double();
+        line2.setLine(anticlockwise1.longitude, anticlockwise1.latitude,
+                anticlockwise2.longitude, anticlockwise2.latitude);
+        startsAnticlockwise.add(line2);
+        Line2D line3 = new Line2D.Double();
+        line3.setLine(anticlockwise2.longitude, anticlockwise2.latitude,
+                nextPosition.longitude, nextPosition.latitude);
+        startsAnticlockwise.add(line3);
+
+        // these two points, currentPosition and nextPosition defines another bounded region.
+        LongLat clockWise1 = currentPosition.nextPosition((direction - 10 + 360) % 360);
+        LongLat clockwise2 = nextPosition.nextPosition((reverseDirection + 10 + 360) % 360);
+        // the bounded area that drone travel to nextPosition by firstly pick an angle which
+        // is multiple of 10 degrees clockwise. If direction is 4 degree, the drone's first move
+        // has angle 0 degree.
+        List<Line2D> startsClockwise = new ArrayList<>();
+        Line2D line4 = new Line2D.Double();
+        line4.setLine(currentPosition.longitude, currentPosition.latitude,
+                clockWise1.longitude, clockWise1.latitude);
+        startsClockwise.add(line4);
+        Line2D line5 = new Line2D.Double();
+        line5.setLine(clockWise1.longitude, clockWise1.latitude,
+                clockwise2.longitude, clockwise2.latitude);
+        startsClockwise.add(line5);
+        Line2D line6 = new Line2D.Double();
+        line6.setLine(clockwise2.longitude, clockwise2.latitude,
+                nextPosition.longitude, nextPosition.latitude);
+        startsClockwise.add(line6);
+
+        // the flight path of the drone can be confined by only one of two regions
+        List<List<Line2D>> flightPathBounds = new ArrayList<>();
+        flightPathBounds.add(startsAnticlockwise);
+        flightPathBounds.add(startsClockwise);
+
+        return flightPathBounds;
     }
 
     /**
@@ -346,7 +422,7 @@ public class Map {
              */
             double latDiff = destination.latitude - current.position.latitude;
             double lngDiff = destination.longitude - current.position.longitude;
-            int direction = (int) (Math.toDegrees(Math.atan2(latDiff, lngDiff)) / 10) * 10;
+            int direction = ((int) (current.position.directionTo(destination) / 10)) * 10;
             ArrayList<Node> frontsFromPoint = new ArrayList<>();
             // A-star search, record unvisited expanded nodes (fronts)
             for (int i = -90; i <= 100; i += 10) {

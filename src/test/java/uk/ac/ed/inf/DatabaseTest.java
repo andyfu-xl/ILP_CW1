@@ -72,6 +72,13 @@ public class DatabaseTest {
     }
 
     @Test
+    public void ttt() {
+        double a = -999.0;
+        int b = -999;
+        System.out.println(a == b);
+    }
+
+    @Test
     public void aaa() {
         DatabaseConnection database = new DatabaseConnection("localhost", "9876");
         HttpConnection parser = new HttpConnection("localhost", "9898");
@@ -117,6 +124,3 @@ public class DatabaseTest {
         System.out.println(direction);
     }
 }
-//e3dde4f9|2023-10-17|s2314239|surely.native.foal
-//select * from orders where CUSTOMER='s2314239' , DELIVERTO='surely.native.foal';
-//ORDERNO |DELIVERYDATE|CUSTOMER|DELIVERTO

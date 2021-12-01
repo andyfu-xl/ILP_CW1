@@ -31,6 +31,18 @@ public class LongLat {
     }
 
     /**
+     * get the angle of move from this LongLat to destination.
+     *
+     * @param destination where the move ends.
+     * @return angle in degrees.
+     */
+    public double directionTo(LongLat destination) {
+        double latDiff = destination.latitude - this.latitude;
+        double lngDiff = destination.longitude - this.longitude;
+        return Math.toDegrees(Math.atan2(latDiff, lngDiff));
+    }
+
+    /**
      * Apply Pythagorean to calculate distance to another point.
      *
      * @param point, the target point we want compute its distance from this LongLat.
@@ -58,17 +70,18 @@ public class LongLat {
      * Calculate the next position of drone given direction of its next move.
      *
      * @param angle the direction of next move, 0 is East, 90 is North, 180 is West
-     *              270 is South, the angle must be multiples of ten.
+     *              270 is South
      *              -999 means hovering (position doesn't change)
      * @return the next position.
      */
-    public LongLat nextPosition(int angle) {
+    public LongLat nextPosition(double angle) {
         LongLat nextPos = new LongLat(this.longitude, this.latitude);
         if (angle == Const.HOVERING) {
             return (nextPos);
-        } else if (angle < 0 | angle > 350 | angle % 10 != 0) {
-            System.err.println("Angle must be multiples of ten " +
-                    "and between 0 and 350, or -999 for hovering");
+        } else if (angle < 0 | angle > 360) {
+            // the function is also used for estimation of flight path, so any
+            // double between 0 and 360 is allowed
+            System.err.println("Angle must between 0 and 360, or -999 for hovering");
             return (nextPos);
         }
         // Cosine of angle to calculate vector of displacement parallel to longitude.
