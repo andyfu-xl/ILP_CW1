@@ -2,6 +2,8 @@ package uk.ac.ed.inf;
 
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
+import com.mapbox.turf.TurfJoins;
+import com.mapbox.turf.TurfJoins.*;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -38,12 +40,12 @@ public class Map {
         /**
          * constructor of the node
          *
-         * @param moved the cost takes to reach the current state, from the beginning position
-         *              of the A-star searching algorithm
+         * @param moved     the cost takes to reach the current state, from the beginning position
+         *                  of the A-star searching algorithm
          * @param heuristic the estimated cost form current state to the destination of the A-star
          *                  searching algorithm.
-         * @param position coordinates of the current node
-         * @param angle angle of last move to reach current state.
+         * @param position  coordinates of the current node
+         * @param angle     angle of last move to reach current state.
          */
         public Node(double moved, double heuristic, LongLat position, int angle) {
             this.cost = moved + heuristic;
@@ -59,7 +61,7 @@ public class Map {
      * Constructor of the map
      *
      * @param dronePosition position of the drone
-     * @param noFlyZones buildings that drones cannot fly through
+     * @param noFlyZones    buildings that drones cannot fly through
      */
     public Map(LongLat dronePosition, ArrayList<Polygon> noFlyZones) {
         this.dronePosition = dronePosition;
@@ -69,11 +71,25 @@ public class Map {
     }
 
     // getters
-    public ArrayList<Path> getFlightPath() { return flightPath; }
-    public List<Point> getFlightLine() { return flightLine; }
-    public ArrayList<Path> getFlightPathBack() { return flightPathBack; }
-    public List<Point> getFlightLineBack() { return flightLineBack; }
-    public ArrayList<Polygon> getNoFlyZones() { return noFlyZones; }
+    public ArrayList<Path> getFlightPath() {
+        return flightPath;
+    }
+
+    public List<Point> getFlightLine() {
+        return flightLine;
+    }
+
+    public ArrayList<Path> getFlightPathBack() {
+        return flightPathBack;
+    }
+
+    public List<Point> getFlightLineBack() {
+        return flightLineBack;
+    }
+
+    public ArrayList<Polygon> getNoFlyZones() {
+        return noFlyZones;
+    }
 
     /**
      * initialize variables for storing the flight path.
@@ -84,8 +100,7 @@ public class Map {
         if (back) {
             flightPathBack = new ArrayList<>();
             flightLineBack = new ArrayList<>();
-        }
-        else {
+        } else {
             flightPath = new ArrayList<>();
             flightLine = new ArrayList<>();
         }
@@ -96,7 +111,7 @@ public class Map {
      * The flights will fly roughly straight unless it passes a turningPoint
      *
      * @param turningPoints position where the drone is about to turn
-     * @param orderNumber order number which will be written into the database
+     * @param orderNumber   order number which will be written into the database
      * @return number of move of the path
      */
     public int turningPointsToPath(ArrayList<LongLat> turningPoints, String orderNumber, Boolean back) {
@@ -176,11 +191,32 @@ public class Map {
         if (!dronePosition.isConfined() | !nextPosition.isConfined()) {
             return false;
         }
+        // Line2D representing a move
         Line2D move = new Line2D.Double();
-        move.setLine(currentPosition.longitude, currentPosition.latitude,
-                nextPosition.longitude, nextPosition.latitude);
-        int cornerIntersect = 0;
+        if (pseudoLandmarks) {
+            // move both end of the line slightly so they are not on corners of no-fly-zones.
+            double lengthOfMove = currentPosition.distanceTo(nextPosition);
+            double x1 = currentPosition.longitude + Const.DISTANCE_MOVE * 0.01 *
+                    (nextPosition.longitude - currentPosition.longitude) * (1 / lengthOfMove);
+            double y1 = currentPosition.latitude + Const.DISTANCE_MOVE * 0.01 *
+                    (nextPosition.latitude - currentPosition.latitude) * (1 / lengthOfMove);
+            double x2 = nextPosition.longitude + Const.DISTANCE_MOVE * 0.01 *
+                    (currentPosition.longitude - nextPosition.longitude) * (1 / lengthOfMove);
+            double y2 = nextPosition.latitude + Const.DISTANCE_MOVE * 0.01 *
+                    (currentPosition.latitude - nextPosition.latitude) * (1 / lengthOfMove);
+            move.setLine(x1, y1, x2, y2);
+        }
+        else {
+            move.setLine(currentPosition.longitude, currentPosition.latitude,
+                    nextPosition.longitude, nextPosition.latitude);
+        }
         for (Polygon p : noFlyZones) {
+            // the starts and end of the move should not in any building (no-fly-zones polygon)
+            Point p1 = Point.fromLngLat(move.getX1(), move.getY1());
+            Point p2 = Point.fromLngLat(move.getX2(), move.getY2());
+            if (TurfJoins.inside(p1, p) | TurfJoins.inside(p2, p)) {
+                return false;
+            }
             List<Point> building = p.coordinates().get(0);
             for (int i = 0; i < building.size() - 1; i++) {
                 double x1 = building.get(i).longitude();
@@ -189,62 +225,27 @@ public class Map {
                 double y2 = building.get(i + 1).latitude();
                 Line2D line = new Line2D.Double();
                 line.setLine(x1, y1, x2, y2);
-                if (pseudoLandmarks) {
-                    int coincideBetweenTwoLines = 0;
-                    /*
-                        As we treating points of no-fly-zones as pseudo-landmarks
-                        There are four ways of cutting an corner of the no-fly-zones,
-                        the move starts form one ends of an edge of no-fly-zones,
-                        or the move ends at one ends of an edge of no-fly-zones.
-                     */
-                    if (x1 == currentPosition.longitude & y1 == currentPosition.latitude) {
-                        coincideBetweenTwoLines++;
-                    }
-                    if (x1 == nextPosition.longitude & y1 == nextPosition.latitude) {
-                        coincideBetweenTwoLines++;
-                    }
-                    if (x2 == currentPosition.longitude & y2 == currentPosition.latitude) {
-                        coincideBetweenTwoLines++;
-                    }
-                    if (x2 == nextPosition.longitude & y2 == nextPosition.latitude) {
-                        coincideBetweenTwoLines++;
-                    }
-                    /*
-                        If a move starts from one end of the edge, ends at another end of the edge,
-                        there will be two coincides, the move will be legal.
-                     */
-                    if (coincideBetweenTwoLines == 2) {
-                        return true;
-                    } else if (coincideBetweenTwoLines == 1) {
-                        // the move passes one corner of the no-fly-zone
-                        cornerIntersect++;
-                        continue;
-                    } else if (coincideBetweenTwoLines > 2) {
-                        // the move is illegal as the drone entered no-fly-zones
-                        System.out.println(coincideBetweenTwoLines + " coincide between 4 points.");
-                        return false;
-                    }
-                }
                 /*
-                    if the move intersects with one edge at anywhere other than edge's end,
-                    the move is illegal.
+                    if the move intersects with one edge, the move is illegal.
                  */
                 if (line.intersectsLine(move)) {
                     return false;
                 }
+                if (pseudoLandmarks) {
+                    Line2D from = new Line2D.Double();
+                    from.setLine(currentPosition.longitude, currentPosition.latitude,
+                            currentPosition.longitude, currentPosition.latitude);
+                    Line2D to = new Line2D.Double();
+                    to.setLine(nextPosition.longitude, nextPosition.latitude,
+                            nextPosition.longitude, nextPosition.latitude);
+                    if (line.intersectsLine(from) & line.intersectsLine(to)) {
+                        return true;
+                    }
+                }
             }
-        }
-        /*
-            if the move intersects with more than one edges, and the move is not parallel
-            with any intersected edge, the move is illegal.
-         */
-        if (pseudoLandmarks & cornerIntersect > 2) {
-            return false;
         }
         return true;
     }
-
-
 
     /**
      * Apply A* search finding the optimal route to destination,

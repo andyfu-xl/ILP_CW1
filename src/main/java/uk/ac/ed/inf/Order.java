@@ -1,6 +1,7 @@
 package uk.ac.ed.inf;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Details of orders
@@ -114,26 +115,22 @@ public class Order {
         int foodCost = 0;
         ArrayList<String> shopLocations = new ArrayList<>();
         int numberOfItems = 0;
-        /* for each items, we need to loop through all shops and their
-           menus to find the desired food item, then sum up the cost */
-        for (String foodItem : this.items) {
-            boolean found = false;      // Once the item is found, the loop will break.
-            for (Shop s : parser.readMenus()) {
-                for (Item i : s.menu) {
-                    if (i.item.equals(foodItem)) {
-                        if (!shopLocations.contains(s.location)) {
-                            shopLocations.add(s.location);
-                        }
-                        found = true;
-                        foodCost += i.pence;
-                        numberOfItems += 1;
-                        break;
-                    }
-                }
-                if (found) {
-                    break;
-                }
+        // store location and cost of each item in HashMap
+        HashMap<String, String> locationMapper = new HashMap<String, String>();
+        HashMap<String, Integer> costMapper = new HashMap<String, Integer>();
+        for (Shop s : parser.readMenus()) {
+            for (Item i : s.menu) {
+                locationMapper.put(i.item, s.location);
+                costMapper.put(i.item, i.pence);
             }
+        }
+        // Search for the item in HashMap to get location and cost
+        for (String foodItem : this.items) {
+            if (!shopLocations.contains(locationMapper.get(foodItem))) {
+                shopLocations.add(locationMapper.get(foodItem));
+            }
+            foodCost += costMapper.get(foodItem);
+            numberOfItems += 1;
         }
         /* The cost are set to -1 if order is illegal, therefore such
            order will not be considered by the algorithm */

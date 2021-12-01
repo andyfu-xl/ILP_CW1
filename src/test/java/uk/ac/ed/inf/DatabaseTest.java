@@ -4,6 +4,7 @@ import com.mapbox.geojson.Point;
 import org.junit.Test;
 
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
