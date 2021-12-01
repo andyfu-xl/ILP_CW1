@@ -181,19 +181,20 @@ public class Map {
      *
      * @param currentPosition the current position which the drone will move to.
      * @param nextPosition    the next position which the drone will move to.
-     * @param pseudoLandmarks whether we treat points of buildings as pseudo-landmarks.
-     *                        true if one move can start or end with one node on any building
-     *                        without passing through the building. This is set to true when
-     *                        searching for the frame of the shortest path.
+     * @param strict          assuming no-fly-zones is strictly contained by its edges,
+     *                        which mean any points one edges is not in no-fly-zones.
+     *                        true if one move can start or end on lines of any building
+     *                        without passing through the building. It is used for
+     *                        searching turning points of the flight
      * @return whether the move is valid.
      */
-    public boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean pseudoLandmarks) {
+    public boolean isValidMove(LongLat currentPosition, LongLat nextPosition, Boolean strict) {
         if (!dronePosition.isConfined() | !nextPosition.isConfined()) {
             return false;
         }
         // Line2D representing a move
         Line2D move = new Line2D.Double();
-        if (pseudoLandmarks) {
+        if (strict) {
             // move both end of the line slightly so they are not on corners of no-fly-zones.
             double lengthOfMove = currentPosition.distanceTo(nextPosition);
             double x1 = currentPosition.longitude + Const.DISTANCE_MOVE * 0.01 *
@@ -231,13 +232,15 @@ public class Map {
                 if (line.intersectsLine(move)) {
                     return false;
                 }
-                if (pseudoLandmarks) {
+                // check if the move is coincide with the edge of no-fly-zones
+                if (strict) {
                     Line2D from = new Line2D.Double();
                     from.setLine(currentPosition.longitude, currentPosition.latitude,
                             currentPosition.longitude, currentPosition.latitude);
                     Line2D to = new Line2D.Double();
                     to.setLine(nextPosition.longitude, nextPosition.latitude,
                             nextPosition.longitude, nextPosition.latitude);
+                    // the drone is not strictly contained by no-fly-zones
                     if (line.intersectsLine(from) & line.intersectsLine(to)) {
                         return true;
                     }
