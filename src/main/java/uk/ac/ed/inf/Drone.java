@@ -26,6 +26,7 @@ public class Drone {
     private List<Point> outputPoints;
     // List of paths storing the data to be written in the database.
     private ArrayList<Path> outputPaths;
+    private int money;
 
     /**
      * Constructor of the drone.
@@ -40,6 +41,7 @@ public class Drone {
         this.database = database;
         // the drone has full battery as the beginning
         this.battery = Const.MAX_POWER;
+        this.money = 0;
         readDrone();
     }
 
@@ -53,6 +55,7 @@ public class Drone {
     public int getEnergyBack() { return energyBack; }
     public List<Point> getOutputPoints() { return outputPoints; }
     public List<Path> getOutputPaths() { return outputPaths; }
+    public int getMoney() { return money; }
 
     /**
      * initialize the drone using information in the server
@@ -198,6 +201,7 @@ public class Drone {
         while (pathForOrder()) {
             outputPoints.addAll(map.getFlightLine());
             outputPaths.addAll(map.getFlightPath());
+            money += currentOrder.getCost();
             if (getOrders().size() == 0) {
                 break;
             }

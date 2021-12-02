@@ -111,6 +111,7 @@ public class Map {
      *
      * @param turningPoints position where the drone is about to turn
      * @param orderNumber   order number which will be written into the database
+     * @param back whether the drone is going back to the Appleton Tower.
      * @return number of move of the path
      */
     public int turningPointsToPath(ArrayList<LongLat> turningPoints, String orderNumber, Boolean back) {
@@ -267,9 +268,9 @@ public class Map {
     }
 
     /**
-     * This function is required for estimate flight path boundaries, given the drone
-     * cannot fly straightly, as it can only choose angle with multiple of 10 degrees.
-     * Using this function will avoid the drone stuck in very small gaps.
+     * This function is required for estimate flight path boundaries, the flightPath is
+     * usually a zigzag line, as the drone can only choose angle with multiples of 10 degrees.
+     * This function will estimate two boundaries of two possible zigzag lines.
      *
      * @param currentPosition current position of the drone
      * @param nextPosition the target position
@@ -281,9 +282,9 @@ public class Map {
         // these two points, currentPosition and nextPosition defines one bounded bounded region.
         LongLat anticlockwise1 = currentPosition.nextPosition((direction + 10 + 360) % 360);
         LongLat anticlockwise2 = nextPosition.nextPosition((reverseDirection - 10 + 360) % 360);
-        // the bounded area that drone travel to nextPosition by firstly pick an angle which
-        // is multiple of 10 degrees anticlockwise. If direction is 4, the drone's first move
-        // has angle 10 degree.
+        /* the bounded area that drone travel to nextPosition by firstly pick an angle which
+        is multiple of 10 degrees anticlockwise. If direction is 4, the drone's first move
+        has angle 10 degree.*/
         List<Line2D> startsAnticlockwise = new ArrayList<>();
         Line2D line1 = new Line2D.Double();
         line1.setLine(currentPosition.longitude, currentPosition.latitude,
@@ -301,9 +302,9 @@ public class Map {
         // these two points, currentPosition and nextPosition defines another bounded region.
         LongLat clockWise1 = currentPosition.nextPosition((direction - 10 + 360) % 360);
         LongLat clockwise2 = nextPosition.nextPosition((reverseDirection + 10 + 360) % 360);
-        // the bounded area that drone travel to nextPosition by firstly pick an angle which
-        // is multiple of 10 degrees clockwise. If direction is 4 degree, the drone's first move
-        // has angle 0 degree.
+        /* the bounded area that drone travel to nextPosition by firstly pick an angle which
+         is multiple of 10 degrees clockwise. If direction is 4 degree, the drone's first move
+         has angle 0 degree. */
         List<Line2D> startsClockwise = new ArrayList<>();
         Line2D line4 = new Line2D.Double();
         line4.setLine(currentPosition.longitude, currentPosition.latitude,
