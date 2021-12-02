@@ -59,4 +59,7 @@ public class Const {
 
     // Drone has limited power which can move at most 1500 moves
     public static final int MAX_POWER = 1500;
+
+    // 1% of a single move, is considered negligible.
+    public static final double SMALL_MOVE = 0.01;
 }

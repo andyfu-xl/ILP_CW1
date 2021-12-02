@@ -24,39 +24,6 @@ public class Map {
     private ArrayList<Polygon> noFlyZones;
 
     /**
-     * A linked node stores a set of points in sequence.
-     * The node is mainly used for the A-star searching algorithm.
-     */
-    public static class Node {
-        // variables
-        double cost;
-        double moved;
-        double heuristic;
-        LongLat position;
-        Node parent;
-        int angle;
-
-        /**
-         * constructor of the node
-         *
-         * @param moved     the cost takes to reach the current state, from the beginning position
-         *                  of the A-star searching algorithm
-         * @param heuristic the estimated cost form current state to the destination of the A-star
-         *                  searching algorithm.
-         * @param position  coordinates of the current node
-         * @param angle     angle of last move to reach current state.
-         */
-        public Node(double moved, double heuristic, LongLat position, int angle) {
-            this.cost = moved + heuristic;
-            this.moved = moved;
-            this.heuristic = heuristic;
-            this.position = position;
-            this.position = position;
-            this.angle = angle;
-        }
-    }
-
-    /**
      * Constructor of the map
      *
      * @param dronePosition position of the drone
@@ -119,14 +86,13 @@ public class Map {
         if (turningPoints.size() <= 1) {
             return moveNumber;
         }
-        LongLat initialPos = turningPoints.get(0);
+        LongLat currentPosition = turningPoints.get(0);
         initializePaths(back);
 
         for (int i = 1; i < turningPoints.size(); i++) {
             LongLat target = turningPoints.get(i);
             // if the target location is the same as current location, the drone hovers
-            if ((target.latitude == turningPoints.get(i - 1).latitude) &
-                    (target.longitude == turningPoints.get(i - 1).longitude)) {
+            if (target.equals(turningPoints.get(i - 1))) {
                 Path previousPath = this.flightPath.get(this.flightPath.size() - 1);
                 Path path = new Path(orderNumber, previousPath.toLongitude,
                         previousPath.toLatitude, -999, previousPath.toLongitude,
@@ -137,39 +103,22 @@ public class Map {
                 this.flightLine.add(point);
                 continue;
             }
-            /*
-              <n> is a linked list of positions, the head is close to the target (turning point)
+            /* <n> is a linked list of positions, the head is close to the target (turning point)
               the linked list is the path from initialPos to target, <n>'s parent is closer to
-              initialPos, the drone will move from its parent to it.
-             */
-            Node n = straightRoute(initialPos, target);
-            /*
-              the drone will be at n's position before it travels to the next target (turning point).
-             */
-            initialPos = n.position;
-            // The linked list is in reserved order of the flight, so I flip it
-            ArrayList<Path> reversedPaths = new ArrayList<>();
-            ArrayList<Point> reversedPoints = new ArrayList<>();
-            while (n.parent != null) {
-                Path path = new Path(orderNumber, n.parent.position.longitude,
-                        n.parent.position.latitude, n.angle, n.position.longitude,
-                        n.position.latitude);
-                moveNumber++;
-                reversedPaths.add(path);
-                reversedPoints.add(Point.fromLngLat(n.position.longitude, n.position.latitude));
-                n = n.parent;
-            }
-            Collections.reverse(reversedPoints);
-            Collections.reverse(reversedPaths);
+              initialPos, the drone will move from its parent to it. */
+            Node straightRoute = straightRoute(currentPosition, target);
+            // the drone will be at n's position before it travels to the next target (turning point).
+            currentPosition = straightRoute.position;
+            moveNumber += straightRoute.toPaths(orderNumber).size();
             // The drone fly back to the appleton tower
             if (back) {
-                this.flightPathBack.addAll(reversedPaths);
-                this.flightLineBack.addAll(reversedPoints);
+                this.flightPathBack.addAll(straightRoute.toPaths(orderNumber));
+                this.flightLineBack.addAll(straightRoute.toPoints());
             }
             // The drone deliver an order
             else {
-                this.flightPath.addAll(reversedPaths);
-                this.flightLine.addAll(reversedPoints);
+                this.flightPath.addAll(straightRoute.toPaths(orderNumber));
+                this.flightLine.addAll(straightRoute.toPoints());
             }
         }
         return moveNumber;
@@ -199,13 +148,13 @@ public class Map {
         if (strictContains) {
             // move both end of the line slightly so they are not on corners of no-fly-zones.
             double lengthOfMove = currentPosition.distanceTo(nextPosition);
-            double x1 = currentPosition.longitude + Const.DISTANCE_MOVE * 0.01 *
+            double x1 = currentPosition.longitude + Const.DISTANCE_MOVE * Const.SMALL_MOVE *
                     (nextPosition.longitude - currentPosition.longitude) * (1 / lengthOfMove);
-            double y1 = currentPosition.latitude + Const.DISTANCE_MOVE * 0.01 *
+            double y1 = currentPosition.latitude + Const.DISTANCE_MOVE * Const.SMALL_MOVE *
                     (nextPosition.latitude - currentPosition.latitude) * (1 / lengthOfMove);
-            double x2 = nextPosition.longitude + Const.DISTANCE_MOVE * 0.01 *
+            double x2 = nextPosition.longitude + Const.DISTANCE_MOVE * Const.SMALL_MOVE *
                     (currentPosition.longitude - nextPosition.longitude) * (1 / lengthOfMove);
-            double y2 = nextPosition.latitude + Const.DISTANCE_MOVE * 0.01 *
+            double y2 = nextPosition.latitude + Const.DISTANCE_MOVE * Const.SMALL_MOVE *
                     (currentPosition.latitude - nextPosition.latitude) * (1 / lengthOfMove);
             move.setLine(x1, y1, x2, y2);
             flightPathBounds = flightPathBounds(new LongLat(x1, y1), new LongLat(x2, y2));
@@ -360,10 +309,8 @@ public class Map {
                     double lat = building.get(i).latitude();
                     LongLat pointOnBuilding = new LongLat(lng, lat);
                     String pointToString = lng + "," + lat;
-                    /*
-                      the drone is allowed to cut the edge of no-fly-zone for simplicity,
-                      an unvisited node will not be recorded if the drone goes inside no-fly-zones.
-                     */
+                    /* the drone is allowed to cut the edge of no-fly-zone for simplicity,
+                      an unvisited node will not be recorded if the drone goes inside no-fly-zones.*/
                     if (!isValidMove(current.position, pointOnBuilding, true) |
                             explored.contains(pointToString)) {
                         continue;
@@ -416,11 +363,9 @@ public class Map {
             if (current.position.closeTo(destination)) {
                 return current;
             }
-            /*
-               Since we are searching for path with no big change of direction,
+            /* Since we are searching for path with no big change of direction,
                We assume the drone will often move towards the target, so we cut
-               half of directions to speed up the algorithm.
-             */
+               half of directions to speed up the algorithm. */
             double latDiff = destination.latitude - current.position.latitude;
             double lngDiff = destination.longitude - current.position.longitude;
             int direction = ((int) (current.position.directionTo(destination) / 10)) * 10;

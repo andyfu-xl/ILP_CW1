@@ -67,6 +67,15 @@ public class LongLat {
     }
 
     /**
+     * Check if two point has the same coordinates.
+     * @param point another point
+     * @return true if this LongLat has the same coordinate as point.
+     */
+    public boolean equals(LongLat point) {
+        return ((latitude == point.latitude) & (longitude == point.longitude));
+    }
+
+    /**
      * Calculate the next position of drone given direction of its next move.
      *
      * @param angle the direction of next move, 0 is East, 90 is North, 180 is West
