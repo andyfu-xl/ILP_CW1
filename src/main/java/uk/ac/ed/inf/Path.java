@@ -1,5 +1,7 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.Point;
+
 /**
  * Path object has details of each move,
  * The details will be written into the database.
@@ -30,6 +32,24 @@ public class Path {
         this.angle = angle;
         this.toLongitude = toLongitude;
         this.toLatitude = toLatitude;
+    }
+
+    /**
+     * Point of from coordinate
+     *
+     * @return Point of from coordinate
+     */
+    public Point pointFrom() {
+        return Point.fromLngLat(fromLongitude, fromLatitude);
+    }
+
+    /**
+     * Point of to coordinate
+     *
+     * @return Point of to coordinate
+     */
+    public Point pointTo() {
+        return Point.fromLngLat(toLongitude, toLatitude);
     }
 
 }

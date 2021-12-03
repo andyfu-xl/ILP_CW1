@@ -22,11 +22,9 @@ public class Drone {
     private DatabaseConnection database;
     public Map map;
     private int energyBack;
-    // List of points storing the data to be written in the geojson file.
-    private List<Point> outputPoints;
     // List of paths storing the data to be written in the database.
     private ArrayList<Path> outputPaths;
-    private int money;
+    private ArrayList<Order> deliveredOrders;
 
     /**
      * Constructor of the drone.
@@ -41,7 +39,7 @@ public class Drone {
         this.database = database;
         // the drone has full battery as the beginning
         this.battery = Const.MAX_POWER;
-        this.money = 0;
+        deliveredOrders = new ArrayList<>();
         readDrone();
     }
 
@@ -53,9 +51,8 @@ public class Drone {
         return battery;
     }
     public int getEnergyBack() { return energyBack; }
-    public List<Point> getOutputPoints() { return outputPoints; }
-    public List<Path> getOutputPaths() { return outputPaths; }
-    public int getMoney() { return money; }
+    public ArrayList<Path> getOutputPaths() { return outputPaths; }
+    public ArrayList<Order> getDeliveredOrders() { return deliveredOrders; }
 
     /**
      * initialize the drone using information in the server
@@ -90,6 +87,21 @@ public class Drone {
             }
         });
         this.orders.remove(currentOrder);
+    }
+
+    /**
+     * Converting ArrayList of paths to points (the flight line)
+     *
+     * @param paths flight path to be stored in database
+     * @return flight points to be written in geojson file
+     */
+    public List<Point> pathsToPoints(ArrayList<Path> paths) {
+        List<Point> points= new ArrayList<>();
+        points.add(paths.get(0).pointFrom());
+        for (Path path : paths) {
+            points.add(path.pointTo());
+        }
+        return points;
     }
 
     /**
@@ -145,18 +157,6 @@ public class Drone {
             map.dronePosition = initialPosition;
             return false;
         }
-//        // Errors, they should not be reached if the program runs as expected.
-//        if (allTurningPoint == null) {
-//            map.dronePosition = initialPosition;
-//            return false;
-//        }
-//        for (Node n : allTurningPoint) {
-//            if (n == null) {
-//                map.dronePosition = initialPosition;
-//                return false;
-//            }
-//        }
-
         // convert linked list to array list
         ArrayList<LongLat> turningPointsList = new ArrayList<>();
         int moveNumber;
@@ -180,31 +180,16 @@ public class Drone {
      * Compute flight path for the given date.
      */
     public void pathForDate() {
-        outputPoints = new ArrayList<>();
-        outputPoints.add(Point.fromLngLat(Const.APT_LONG, Const.APT_LAT));
         outputPaths = new ArrayList<>();
         // The path before the drone back to Appleton Tower (before running out battery)
         while (pathForOrder()) {
-            outputPoints.addAll(map.getFlightLine());
             outputPaths.addAll(map.getFlightPath());
-            money += currentOrder.getCost();
             if (getOrders().size() == 0) {
                 break;
             }
+            deliveredOrders.add(currentOrder);
             selectOrderByUtility();
         }
-        // The drone cannot back to Appleton Tower if it deliver for the next order.
-        // Adding the path of the drone back to Appleton Tower.
-        if (backAPT(map.dronePosition)) {
-            outputPoints.addAll(map.getFlightLineBack());
-            outputPaths.addAll(map.getFlightPathBack());
-        }
-        else {
-            // This will never be reached unless there are bugs.
-            System.err.println("Error: The drone cannot back to the APT.");
-            outputPoints = new ArrayList<>();
-            outputPaths = new ArrayList<>();
-            return;
-        }
+        outputPaths.addAll(map.getFlightPathBack());
     }
 }

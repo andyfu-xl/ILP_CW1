@@ -5,6 +5,7 @@ import com.mapbox.geojson.Point;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,11 +54,12 @@ public class App {
         Drone drone = new Drone(date, parser, database);
         drone.map.dronePosition = new LongLat(Const.APT_LONG, Const.APT_LAT);
         drone.pathForDate();
-        // List of points storing the data to be written in the geojson file.
-        List<Point> outputPoints = drone.getOutputPoints();
         // List of paths storing the data to be written in the database.
-        List<Path> outputPaths = drone.getOutputPaths();
-
+        ArrayList<Path> outputPaths = drone.getOutputPaths();
+        // List of points storing the data to be written in the geojson file.
+        List<Point> outputPoints = drone.pathsToPoints(outputPaths);
+        database.createTable();
+        database.writeOrders(drone.getDeliveredOrders());
         database.writePaths(outputPaths);
         // Convert list of points to FeatureCollection and write into a file.
         LineString lineString = LineString.fromLngLats(outputPoints);
@@ -65,10 +67,7 @@ public class App {
         FeatureCollection fc = FeatureCollection.fromFeature(f);
         date = dd + "-" + mm + "-" + year;
         writeFile(fc.toJson(), date);
-        System.out.println(fc.toJson()); // uncomment for print the json data
-        System.out.println(outputPaths.size());
-        System.out.println(outputPoints.size());
-        System.out.println("monetary value: " + drone.getMoney());
+        //System.out.println(fc.toJson()); // uncomment for print the json data
         System.out.println("total number of moves: "
                 + (Const.MAX_POWER - drone.getBattery() + drone.getEnergyBack()));
     }

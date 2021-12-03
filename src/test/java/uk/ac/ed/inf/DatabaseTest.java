@@ -68,14 +68,16 @@ public class DatabaseTest {
 
     @Test
     public void finalTest() {
-        App.main(new String[]{"02", "02", "2022", "9898", "9876"});
+        App.main(new String[]{"04", "04", "2022", "9898", "9876"});
     }
 
     @Test
     public void ttt() {
-        double a = -999.0;
-        int b = -999;
-        System.out.println(a == b);
+        LongLat l1 = new LongLat(1.0,2.0);
+        LongLat l2 = new LongLat(1.0, 2.0);
+        ArrayList<LongLat> lls = new ArrayList<>();
+        lls.add(l1);
+        System.out.println(lls.contains(l2));
     }
 
     @Test

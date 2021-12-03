@@ -37,6 +37,12 @@ public class Node {
         this.angle = angle;
     }
 
+    /**
+     * Convering linked list of nodes to ArrayList of paths
+     *
+     * @param orderNumber orderNumber need to construct path
+     * @return ArrayList of path
+     */
     public ArrayList<Path> toPaths(String orderNumber) {
         ArrayList<Path> paths = new ArrayList<>();
         if (parent != null) {
@@ -52,6 +58,11 @@ public class Node {
         return paths;
     }
 
+    /**
+     * Convering linked list of nodes to ArrayList of LongLats
+     *
+     * @return ArrayList of path
+     */
     public ArrayList<LongLat> toLongLats() {
         ArrayList<LongLat> longLats = new ArrayList<>();
         if (parent != null) {
@@ -63,19 +74,6 @@ public class Node {
             return longLats;
         }
         return longLats;
-    }
-
-
-    public ArrayList<Point> toPoints() {
-        ArrayList<Point> points = new ArrayList<>();
-        if (parent != null) {
-            points = (parent.toPoints());
-            points.add(Point.fromLngLat(position.longitude, position.latitude));
-        }
-        else {
-            return points;
-        }
-        return points;
     }
 
 }

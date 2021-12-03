@@ -1,5 +1,8 @@
 package uk.ac.ed.inf;
 
+import java.awt.*;
+import java.awt.geom.Line2D;
+
 /**
  * representation of a point, by its longitude and latitude.
  */
@@ -36,7 +39,7 @@ public class LongLat {
      * @param destination where the move ends.
      * @return angle in degrees.
      */
-    public double directionTo(LongLat destination) {
+    public double bearing(LongLat destination) {
         double latDiff = destination.latitude - this.latitude;
         double lngDiff = destination.longitude - this.longitude;
         return Math.toDegrees(Math.atan2(latDiff, lngDiff));
@@ -68,11 +71,42 @@ public class LongLat {
 
     /**
      * Check if two point has the same coordinates.
-     * @param point another point
-     * @return true if this LongLat has the same coordinate as point.
+     *
+     * @param obj another point
+     * @return true if this LongLat has the same coordinate as point
      */
-    public boolean equals(LongLat point) {
-        return ((latitude == point.latitude) & (longitude == point.longitude));
+    public boolean equals(LongLat obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof LongLat)) {
+            return false;
+        }
+        LongLat point = obj;
+        return (latitude.equals(point.latitude) & longitude.equals(point.longitude));
+    }
+
+    /**
+     * convert geojson.Point objects to LongLat objects
+     *
+     * @param point geojson.point to be converted
+     * @return a LongLat with same coordinate
+     */
+    public static LongLat fromPoint(com.mapbox.geojson.Point point) {
+        return new LongLat(point.longitude(), point.latitude());
+    }
+
+    /**
+     * Two points forms a Line2D object
+     *
+     * @param p1 the first point
+     * @param p2 the second point
+     * @return Line2D between two points
+     */
+    public static Line2D formLine(LongLat p1, LongLat p2) {
+        Line2D line = new Line2D.Double();
+        line.setLine(p1.longitude, p1.latitude, p2.longitude, p2.latitude);
+        return line;
     }
 
     /**
