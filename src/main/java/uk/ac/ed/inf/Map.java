@@ -81,7 +81,7 @@ public class Map {
             if (target.equals(turningPoints.get(i - 1))) {
                 Path previousPath = this.flightPath.get(this.flightPath.size() - 1);
                 Path path = new Path(orderNumber, previousPath.toLongitude,
-                        previousPath.toLatitude, -999, previousPath.toLongitude,
+                        previousPath.toLatitude, Const.HOVERING, previousPath.toLongitude,
                         previousPath.toLatitude);
                 moveNumber++;
                 this.flightPath.add(path);
@@ -144,6 +144,7 @@ public class Map {
         else {
             move = LongLat.formLine(currentPosition, nextPosition);
         }
+        boolean coincide = false;
         for (Polygon p : noFlyZones) {
             List<Point> building = p.coordinates().get(0);
             for (int i = 0; i < building.size() - 1; i++) {
@@ -155,9 +156,8 @@ public class Map {
                 if (!singleMove) {
                     Line2D from = LongLat.formLine(currentPosition, currentPosition);
                     Line2D to = LongLat.formLine(nextPosition, nextPosition);
-                    // the drone is not strictly contained by no-fly-zones
                     if (line.intersectsLine(from) & line.intersectsLine(to)) {
-                        return true;
+                        coincide = true;
                     }
                     // check whether the drone will pass a very small gap.
                     for (int j = 0; j < flightPathBounds.size(); j++) {
@@ -170,14 +170,14 @@ public class Map {
                     }
                 }
                 // if the move intersects with one edge, the move is illegal.
-                if (line.intersectsLine(move)) {
+                if (line.intersectsLine(move) & !coincide) {
                     return false;
                 }
             }
             // the starts and end of the move should not in any building (no-fly-zones polygon)
             Point p1 = Point.fromLngLat(move.getX1(), move.getY1());
             Point p2 = Point.fromLngLat(move.getX2(), move.getY2());
-            if (TurfJoins.inside(p1, p) | TurfJoins.inside(p2, p)) {
+            if ((TurfJoins.inside(p1, p) | TurfJoins.inside(p2, p)) & !coincide) {
                 return false;
             }
         }

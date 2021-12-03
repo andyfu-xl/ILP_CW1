@@ -164,8 +164,8 @@ public class Drone {
             turningPointsList.addAll(n.toLongLats());
         }
         moveNumber = map.turningPointsToPath(turningPointsList, currentOrder.getOrderNo(), false);
-        // subtract the battery before letting the drone back to the appleton tower
-        battery -= moveNumber;
+        // subtract the battery before letting the drone back to the appleton tower, 1 is for hovering
+        battery -= (moveNumber + 1);
 
         if (!backAPT(map.dronePosition)) {
             // reset the drone status to before delivering this order.
@@ -184,10 +184,15 @@ public class Drone {
         // The path before the drone back to Appleton Tower (before running out battery)
         while (pathForOrder()) {
             outputPaths.addAll(map.getFlightPath());
+            Path lastMove = outputPaths.get(outputPaths.size() - 1);
+            Path hovering = new Path(currentOrder.getOrderNo(), lastMove.toLongitude,
+                    lastMove.toLatitude, Const.HOVERING,
+                    lastMove.toLongitude, lastMove.toLatitude);
+            outputPaths.add(hovering);
+            deliveredOrders.add(currentOrder);
             if (getOrders().size() == 0) {
                 break;
             }
-            deliveredOrders.add(currentOrder);
             selectOrderByUtility();
         }
         outputPaths.addAll(map.getFlightPathBack());

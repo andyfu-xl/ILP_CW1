@@ -43,7 +43,7 @@ public class DatabaseTest {
                 "select * from ORDERS where DELIVERYDATE=(?)";
         PreparedStatement psCourseQuery =
                 dc.getConn().prepareStatement(coursesQuery);
-        psCourseQuery.setString(1, "2023-09-20");
+        psCourseQuery.setString(1, "2022-01-01");
         ArrayList<String> locList = new ArrayList<>();
         ResultSet rs = psCourseQuery.executeQuery();
         while (rs.next()) {
@@ -59,7 +59,7 @@ public class DatabaseTest {
     public void search() {
         DatabaseConnection database = new DatabaseConnection("localhost", "9876");
         HttpConnection parser = new HttpConnection("localhost", "9898");
-        Drone drone = new Drone("2023-12-01", parser, database);
+        Drone drone = new Drone("2022-01-01", parser, database);
         drone.selectOrderByUtility();
         drone.map.dronePosition = parser.wordsToLongLat(drone.getOrders().get(1).getDeliverTo());
         //drone.getOrders().get(0).getShopCoordinate().get(0);//
@@ -68,7 +68,7 @@ public class DatabaseTest {
 
     @Test
     public void finalTest() {
-        App.main(new String[]{"04", "04", "2022", "9898", "9876"});
+        App.main(new String[]{"12", "12", "2022", "9898", "9876"});
     }
 
     @Test
