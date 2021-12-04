@@ -109,6 +109,7 @@ public class Map {
     /**
      * Check whether the drone can move to the next position without entering
      * no-fly-zones or getting out of the confinement area.
+     * this function is explained with figures in report section 2.4
      *
      * @param currentPosition the current position which the drone will move to.
      * @param nextPosition    the next position which the drone will move to.
@@ -193,6 +194,7 @@ public class Map {
      * This function is required for estimate flight path boundaries, the flightPath is
      * usually a zigzag line, as the drone can only choose angle with multiples of 10 degrees.
      * This function will estimate two boundaries of two possible zigzag lines.
+     * this function is explained with a figure in report section 2.4
      *
      * @param currentPosition current position of the drone
      * @param nextPosition the target position

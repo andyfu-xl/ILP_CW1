@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="uk.ac.ed.inf.AppTest" time="1.147" tests="2" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="uk.ac.ed.inf.DatabaseTest" time="3.516" tests="9" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="14"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-14.0.2\bin"/>
-    <property name="sun.java.command" value="C:\Users\ANDYFU~1\AppData\Local\Temp\surefire11650848729039297222\surefirebooter10201434705603953318.jar C:\Users\Andy Fu\AppData\Local\Temp\surefire11650848729039297222 2021-12-04T23-02-00_664-jvmRun1 surefire856458453724416267tmp surefire_010023792936432766217tmp"/>
+    <property name="sun.java.command" value="C:\Users\ANDYFU~1\AppData\Local\Temp\surefire3587433675487009763\surefirebooter4652631046202415503.jar C:\Users\Andy Fu\AppData\Local\Temp\surefire3587433675487009763 2021-12-04T20-07-46_756-jvmRun1 surefire8974034624346056141tmp surefire_07350056665467504467tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp\target\test-classes;C:\Users\Andy Fu\Desktop\university\year3 semester1\Informatics Large Practical\ilp\ilp\target\classes;C:\Users\Andy Fu\.m2\repository\org\apache\derby\derbyclient\10.15.2.0\derbyclient-10.15.2.0.jar;C:\Users\Andy Fu\.m2\repository\org\apache\derby\derbyshared\10.15.2.0\derbyshared-10.15.2.0.jar;C:\Users\Andy Fu\.m2\repository\com\mapbox\mapboxsdk\mapbox-sdk-geojson\5.8.0\mapbox-sdk-geojson-5.8.0.jar;C:\Users\Andy Fu\.m2\repository\com\mapbox\mapboxsdk\mapbox-sdk-turf\5.8.0\mapbox-sdk-turf-5.8.0.jar;C:\Users\Andy Fu\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\Andy Fu\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\Andy Fu\.m2\repository\com\google\code\gson\gson\2.8.8\gson-2.8.8.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\ANDYFU~1\AppData\Local\Temp\surefire11650848729039297222\surefirebooter10201434705603953318.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\ANDYFU~1\AppData\Local\Temp\surefire3587433675487009763\surefirebooter4652631046202415503.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="14.0.2+12-46"/>
@@ -56,6 +56,13 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="58.0"/>
   </properties>
-  <testcase name="testReadData" classname="uk.ac.ed.inf.AppTest" time="0.122"/>
-  <testcase name="finalTest" classname="uk.ac.ed.inf.AppTest" time="0.992"/>
+  <testcase name="testDeleteTable" classname="uk.ac.ed.inf.DatabaseTest" time="0.001"/>
+  <testcase name="testCreateTable" classname="uk.ac.ed.inf.DatabaseTest" time="0.01"/>
+  <testcase name="search" classname="uk.ac.ed.inf.DatabaseTest" time="0.107"/>
+  <testcase name="testReadData" classname="uk.ac.ed.inf.DatabaseTest" time="0.006"/>
+  <testcase name="t" classname="uk.ac.ed.inf.DatabaseTest" time="0.001"/>
+  <testcase name="aaa" classname="uk.ac.ed.inf.DatabaseTest" time="0.229"/>
+  <testcase name="ttt" classname="uk.ac.ed.inf.DatabaseTest" time="0"/>
+  <testcase name="angle" classname="uk.ac.ed.inf.DatabaseTest" time="0"/>
+  <testcase name="finalTest" classname="uk.ac.ed.inf.DatabaseTest" time="3.161"/>
 </testsuite>

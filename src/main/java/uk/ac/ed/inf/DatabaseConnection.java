@@ -151,7 +151,7 @@ public class DatabaseConnection {
             PreparedStatement psPath = conn.prepareStatement(
                     "insert into deliveries values (?, ?, ?)"
             );
-            // write each path
+            // write each order
             for (Order order : orders) {
                 psPath.setString(1, order.getOrderNo());
                 psPath.setString(2, order.getDeliverTo());
@@ -160,9 +160,9 @@ public class DatabaseConnection {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-            System.err.println("Error: Failed to write paths into database.");
+            System.err.println("Error: Failed to write Orders into database.");
         }
-        System.out.println("Path writen into database.");
+        System.out.println("Orders writen into database.");
     }
 
     /**

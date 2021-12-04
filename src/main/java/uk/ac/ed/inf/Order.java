@@ -35,7 +35,7 @@ public class Order {
         this.items = items;
     }
 
-    // getters
+    // getters, some of them are only used for testing
     public String getOrderNo() { return orderNo; }
     public String getDeliveryDate() { return deliveryDate; }
     public String getCustomer() { return customer; }
